@@ -14,7 +14,7 @@ const { JUBJUBE, JUBJUBC, GENERATOR } = BABYJUBJUB;
 const Fp = BigInt(ZOKRATES_PRIME); // the prime field used with the curve E(Fp)
 const Fq = JUBJUBE / JUBJUBC;
 const AUTHORITY_PRIVATE_KEYS = [];
-const AUTHORITY_PUBLIC_KEYS = [];
+export const AUTHORITY_PUBLIC_KEYS = [];
 
 function isOnCurve(p) {
   const { JUBJUBA: a, JUBJUBD: d } = BABYJUBJUB;
@@ -115,7 +115,7 @@ export function enc(randomSecret, ...strings) {
 Decrypt the above
 */
 export function dec(encryption) {
-  const c0 = encryption[0];
+  const c0 = encryption[0]; // this encrypts the sender's random secret, needed for shared-secret generation
   const encryptedMessages = encryption.slice(1);
   // recover the shared secrets
   const sharedSecrets = AUTHORITY_PRIVATE_KEYS.map(e => {

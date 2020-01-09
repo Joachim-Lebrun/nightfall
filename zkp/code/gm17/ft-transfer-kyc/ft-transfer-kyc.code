@@ -198,7 +198,7 @@ def main(field publicInputHash, private field valueC, private field[2] secretKey
 	field[256] commitmentEBitsCheck = sha256of1024(preimage1024[0..256], preimage1024[256..512], preimage1024[512..768], preimage1024[768..1024]) // commitmentE
 
 	// And the encryption of the transaction (extend the value up to 256 bits)
-	field[8] w = enc3([...[0;128], ...valueE], publicKeyABits, publicKeyBBits, authorityPublicKey1, authorityPublicKey2, authorityPublicKey3, randomSecret)
+	field[8] w = enc3([...[0;128], ...valueEBits], publicKeyABits, publicKeyBBits, authorityPublicKey1, authorityPublicKey2, authorityPublicKey3, randomSecret)
 	// check the encryption has been computed correctly
 	w == encryption
 

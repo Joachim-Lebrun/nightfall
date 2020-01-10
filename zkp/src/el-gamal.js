@@ -91,11 +91,14 @@ Performs El-Gamal encryption
 @param {String} randomSecret - random value mod Fq.  Must be changed each time
 this function is called
 */
-export function enc(randomSecret, ...strings) {
-  if (AUTHORITY_PUBLIC_KEYS.length !== strings.length)
+export function enc(randomSecret, strings) {
+  if (AUTHORITY_PUBLIC_KEYS.length !== strings.length) {
+    console.log('number of authority public keys:', AUTHORITY_PUBLIC_KEYS.length);
+    console.log('number of message strings:', strings.length);
     throw new Error(
       'The number of authority public keys and the number of messages must be the same',
     );
+  }
   // We can't directly encrypt hex strings.  We can encrypt a curve point however,
   // so we convert a string to a curve point by a scalar multiplication
   const messages = strings.map(e => scalarMult(utils.ensure0x(e), GENERATOR));

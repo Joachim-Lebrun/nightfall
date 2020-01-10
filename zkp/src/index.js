@@ -10,7 +10,6 @@ import { merkleTree, provider } from '@eyblockchain/nightlite';
 import { ftCommitmentRoutes, ftRoutes, nftCommitmentRoutes, nftRoutes } from './routes';
 import vkController from './vk-controller'; // this import TRIGGERS the runController() script within.
 import { formatResponse, formatError, errorHandler } from './middlewares';
-import { setAuthorityPrivateKeys } from './el-gamal';
 
 const app = express();
 
@@ -78,13 +77,6 @@ We TRIGGER the merkle-tree microservice's event filter from here.
 TODO: consider whether there is a better way to do this when the application starts-up.
 */
 if (process.env.NODE_ENV !== 'test') merkleTree.startEventFilter();
-
-/**
-We also load test keys for the El-Gamal encryption, if we're in test mode.  Otherwise
-these will be provided from the user's local db, HSM or whatever
-TODO: consider whether there is a better way to do this when the application starts-up.
-*/
-if (process.env.EL_GAMAL_KEYS === 'test') setAuthorityPrivateKeys();
 
 const server = app.listen(80, '0.0.0.0', () =>
   console.log('Zero-Knowledge-Proof RESTful API server started on ::: 80'),

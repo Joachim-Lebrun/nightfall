@@ -99,13 +99,18 @@ export function enc(randomSecret, strings) {
       'The number of authority public keys and the number of messages must be the same',
     );
   }
+  // eslint-disable-next-line valid-typeof
+  if (typeof randomSecret !== 'bigint')
+    throw new Error(
+      'The random secret chosen for encryption should be a BigInt, unlike the messages, which are hex strings',
+    );
   // We can't directly encrypt hex strings.  We can encrypt a curve point however,
   // so we convert a string to a curve point by a scalar multiplication
   const messages = strings.map(e => scalarMult(utils.ensure0x(e), GENERATOR));
   // now we use the public keys and random number to generate shared secrets
   const sharedSecrets = AUTHORITY_PUBLIC_KEYS.map(e => {
     if (e === undefined) throw new Error('Trying to encrypt with a undefined public key');
-    return scalarMult(utils.ensure0x(randomSecret), e);
+    return scalarMult(randomSecret, e);
   });
   // finally, we can encrypt the messages using the share secrets
   const c0 = scalarMult(randomSecret, GENERATOR);

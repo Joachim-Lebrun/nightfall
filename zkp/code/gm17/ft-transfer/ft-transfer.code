@@ -87,7 +87,7 @@ def unpack2xx128To256(field[2] input)->(field[256]):
 
 // Each field element passed to main() can be at most 128bits, to make use of unpack128() so most variables occupy two fields (except the publicInputHash, which we maximize as 248-bits)
 
-def main(field publicInputHash, private field valueC, private field[2] secretKeyA, private field[2] saltC, private field[32] pathC, private field orderC, private field valueD, private field[2] saltD, private field[32] pathD, private field orderD, private field[2] nullifierC, private field[2] nullifierD, private field valueE, private field[2] publicKeyB, private field[2] saltE, private field[2] commitmentE, private field valueF, private field[2] saltF, private field[2] commitmentF, private field[2] root, field[8] encryption, field[2] authorityPublicKey1, field[2] authorityPublicKey2, field[2] authorityPublicKey3, field randomSecret)->():
+def main(field publicInputHash, private field valueC, private field[2] secretKeyA, private field[2] saltC, private field[32] pathC, private field orderC, private field valueD, private field[2] saltD, private field[32] pathD, private field orderD, private field[2] nullifierC, private field[2] nullifierD, private field valueE, private field[2] publicKeyB, private field[2] saltE, private field[2] commitmentE, private field valueF, private field[2] saltF, private field[2] commitmentF, private field[2] root, private field[8] encryption, private field[2] authorityPublicKey1, private field[2] authorityPublicKey2, private field[2] authorityPublicKey3, private field randomSecret)->():
 
 	// Unpack the inputs of main() to 128 bits. We'll unpack each field to its own 128 bit string for simplicity for now. Later efficiencies could be made by grouping some inputs.
 

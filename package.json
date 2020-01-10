@@ -43,5 +43,6 @@
     "solhint": "^1.5.1",
     "superagent": "^5.1.0",
     "superagent-prefix": "0.0.2"
-  }
+  },
+  "dependencies": {}
 }

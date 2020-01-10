@@ -110,7 +110,8 @@ export function enc(randomSecret, strings) {
   // finally, we can encrypt the messages using the share secrets
   const c0 = scalarMult(randomSecret, GENERATOR);
   const encryptedMessages = messages.map((e, i) => add(e, sharedSecrets[i]));
-  const encryption = [...c0, ...encryptedMessages];
+  const encryption = [c0, ...encryptedMessages];
+  // console.log('encryption', encryption);
   return encryption;
 }
 

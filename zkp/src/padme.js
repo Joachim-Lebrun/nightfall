@@ -23,5 +23,5 @@ padding = padding.concat(
     .padStart(64, '0')
     .split(''),
 );
-console.log('Padded length is', l + padding.length);
+console.log('Padded length is', padding.length);
 console.log('The padding that you are looking for is:', padding.join(',  '));

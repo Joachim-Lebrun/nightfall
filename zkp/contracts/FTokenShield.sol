@@ -125,7 +125,7 @@ contract FTokenShield is Ownable, MerkleTree {
   /**
   The transfer function transfers a commitment to a new owner
   */
-  function transfer(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32 _root, bytes32 _nullifierC, bytes32 _nullifierD, bytes32 _commitmentE, bytes32 _commitmentF) external {
+  function transfer(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32[] calldata publicInputs) external {
 
       // gas measurement:
       uint256[3] memory gasUsed; // array needed to stay below local stack limit
@@ -133,7 +133,7 @@ contract FTokenShield is Ownable, MerkleTree {
 
       // Check that the publicInputHash equals the hash of the 'public inputs':
       bytes31 publicInputHash = bytes31(bytes32(_inputs[0]) << 8);
-      bytes31 publicInputHashCheck = bytes31(sha256(abi.encodePacked(_root, _nullifierC, _nullifierD, _commitmentE, _commitmentF)) << 8);
+      bytes31 publicInputHashCheck = bytes31(sha256(abi.encodePacked(publicInputs)) << 8);
       require(publicInputHashCheck == publicInputHash, "publicInputHash cannot be reconciled");
 
       // gas measurement:
@@ -148,25 +148,34 @@ contract FTokenShield is Ownable, MerkleTree {
       gasUsed[2] = gasUsed[0] - gasleft();
       gasUsed[0] = gasleft();
 
+      // Unfortunately stack depth constraints mandate an array, so we can't use more friendly names.
+      // However, here's a handy guide:
+      // publicInputs[0] - root
+      // publicInputs[1] - nullifierC
+      // publicInputs[2] - nullifierD
+      // publicInputs[3] - commitmentE
+      // publicInputs[4] - commitmentF
+      // publicInputs[5..] - elGamal
+
       // check inputs vs on-chain states
-      require(roots[_root] == _root, "The input root has never been the root of the Merkle Tree");
-      require(_nullifierC != _nullifierD, "The two input nullifiers must be different!");
-      require(_commitmentE != _commitmentF, "The new commitments (commitmentE and commitmentF) must be different!");
-      require(nullifiers[_nullifierC] == 0, "The commitment being spent (commitmentE) has already been nullified!");
-      require(nullifiers[_nullifierD] == 0, "The commitment being spent (commitmentF) has already been nullified!");
+      require(roots[publicInputs[0]] == publicInputs[0], "The input root has never been the root of the Merkle Tree");
+      require(publicInputs[1] !=publicInputs[2], "The two input nullifiers must be different!");
+      require(publicInputs[3] != publicInputs[4], "The new commitments (commitmentE and commitmentF) must be different!");
+      require(nullifiers[publicInputs[1]] == 0, "The commitment being spent (commitmentE) has already been nullified!");
+      require(nullifiers[publicInputs[2]] == 0, "The commitment being spent (commitmentF) has already been nullified!");
 
       // update contract states
-      nullifiers[_nullifierC] = _nullifierC; //remember we spent it
-      nullifiers[_nullifierD] = _nullifierD; //remember we spent it
+      nullifiers[publicInputs[1]] = publicInputs[1]; //remember we spent it
+      nullifiers[publicInputs[2]] = publicInputs[2]; //remember we spent it
 
       bytes32[] memory leaves = new bytes32[](2);
-      leaves[0] = _commitmentE;
-      leaves[1] = _commitmentF;
+      leaves[0] = publicInputs[3];
+      leaves[1] = publicInputs[4];
 
       latestRoot = insertLeaves(leaves); // recalculate the root of the merkleTree as it's now different
       roots[latestRoot] = latestRoot; // and save the new root to the list of roots
 
-      emit Transfer(_nullifierC, _nullifierD);
+      emit Transfer(publicInputs[1], publicInputs[2]);
 
       // gas measurement:
       gasUsed[1] = gasUsed[1] + gasUsed[0] - gasleft();

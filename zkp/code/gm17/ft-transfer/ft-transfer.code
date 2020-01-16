@@ -259,8 +259,8 @@ def main(field publicInputHash, private field valueC, private field[2] secretKey
 	// Check that the 'public inputs' hash to the publicInputHash:
 	field[4864] preimage4864 = concatenate19xx256([rootBits, nullifierCBits, nullifierDBits, commitmentEBits, commitmentFBits, unpack256(encryption[0]), unpack256(encryption[1]), unpack256(encryption[2]), unpack256(encryption[3]), unpack256(encryption[4]), unpack256(encryption[5]), unpack256(encryption[6]), unpack256(encryption[7]), unpack256(authorityPublicKey1[0]), unpack256(authorityPublicKey1[1]), unpack256(authorityPublicKey2[0]), unpack256(authorityPublicKey2[1]), unpack256(authorityPublicKey3[0]), unpack256(authorityPublicKey3[1])])
 
-	field[256] publicInputHashBitsCheck = sha256of5120(preimage4864[0..256], preimage4864[256..512], preimage4864[512..768] preimage4864[768..1024] preimage4864[1024..1280] preimage4864[1280..1536] preimage4864[1536..1792] preimage4864[1792..2048] preimage4864[2048..2304] preimage4864[2304..2560] preimage4864[2560..2816] preimage4864[2816..3072] preimage4864[3072..3328] preimage4864[3328..3584], preimage4864[3584..3840] preimage4864[3840..4096] preimage4864[4096..4352], preimage4864[4352..4608] preimage4864[4608..4864], padding4864To5120)
+	field[256] publicInputHashBitsCheck = sha256of5120(preimage4864[0..256], preimage4864[256..512], preimage4864[512..768], preimage4864[768..1024], preimage4864[1024..1280], preimage4864[1280..1536], preimage4864[1536..1792], preimage4864[1792..2048], preimage4864[2048..2304], preimage4864[2304..2560], preimage4864[2560..2816], preimage4864[2816..3072], preimage4864[3072..3328], preimage4864[3328..3584], preimage4864[3584..3840], preimage4864[3840..4096], preimage4864[4096..4352], preimage4864[4352..4608], preimage4864[4608..4864], padding4864To5120)
 
-	// publicInputHashBits[8..256] == publicInputHashBitsCheck[8..256]
+	publicInputHashBits[8..256] == publicInputHashBitsCheck[8..256]
 
 	return

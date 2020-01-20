@@ -2,11 +2,9 @@
 functions to support El-Gamal encryption over a BabyJubJub curve
 */
 
-import config from './config';
+import config from 'config';
 import { modDivide } from './modular-division';
 import utils from './zkpUtils';
-
-// const utils = require('zkp-utils')('/app/config/stats.json');
 
 const { BABYJUBJUB, ZOKRATES_PRIME, TEST_PRIVATE_KEYS } = config;
 const one = BigInt(1);

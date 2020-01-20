@@ -55,6 +55,8 @@ module.exports = {
     BigInt('2464057452572750886'),
   ],
 
+  ZOKRATES_PRIME: '21888242871839275222246405745257275088548364400416034343698204186575808495617', // decimal representation of the prime p of GaloisField(p)
+
   // *****
 
   ZOKRATES_PACKING_SIZE: '128', // ZOKRATES_PRIME is approx 253-254bits (just shy of 256), so we pack field elements into blocks of 128 bits.

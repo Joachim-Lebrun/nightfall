@@ -183,7 +183,7 @@ contract FTokenShield is Ownable, MerkleTree {
   }
 
   /**
-  The transfer function transfers 20 commitments to new owners
+  The batch transfer function transfers 20 commitments to new owners
   */
   function simpleBatchTransfer(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32 _root, bytes32 _nullifier, bytes32[] calldata _commitments) external {
 

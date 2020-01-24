@@ -7,16 +7,9 @@ import "utils/pack/nonStrictUnpack256.code" as unpack256
 def concatenate128x256x256(field[128] a, field[256] b, field[256] c)->(field[640]):
 	return [...a, ...b, ...c]
 
-def concatenate128x256(field[128] a, field[256] b)->(field[384]):
-	return [...a, ...b]
-
 // Provides the padding (only!) for a 640-bit message.
 def shaPad640To1024()->(field[384]):
 	return [1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	1,	0,	0,	0,	0,	0,	0,	0]
-
-// Provides the padding (only!) for a 768-bit message.
-def shaPad384To512()->(field[128]):
-	return [1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	1,	0,	0,	0,	0,	0,	0,	0]
 
 // unpack a field[2] (assumed to be two 128-bit values) into 256 bits
 def unpack2xx128To256(field[2] input)->(field[256]):
@@ -44,8 +37,6 @@ def main(field publicInputHash, private field value, private field[2]  publicKey
 	field[256] commitmentBits = unpack2xx128To256(commitment)
 
 	field[384] padding640To1024 = shaPad640To1024()
-	field[128] padding384To512 = shaPad384To512()
-
 
 	// Compute commitment = H(value|publicKey|salt):
 
@@ -61,11 +52,11 @@ def main(field publicInputHash, private field value, private field[2]  publicKey
 
 
 	// Check that the 'public inputs' hash to the publicInputHash:
-	field[384] preimage384 = concatenate128x256(valueBits, commitmentBits)
+	preimage640 = concatenate128x256x256(valueBits, commitmentBits, publicKeyBits)
 
-	field[512] preimage512 = [...preimage384, ...padding384To512]
+	preimage1024 = [...preimage640, ...padding640To1024]
 
-	field[256] publicInputHashBitsCheck = sha256of512(preimage512[0..256], preimage512[256..512])
+	field[256] publicInputHashBitsCheck = sha256of1024(preimage1024[0..256], preimage1024[256..512], preimage1024[512..768], preimage1024[768..1024])
 
 	publicInputHashBits[8..256] == publicInputHashBitsCheck[8..256]
 

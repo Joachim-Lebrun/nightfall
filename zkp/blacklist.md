@@ -14,7 +14,7 @@ Two data structures are used for this purpose:
 ### Mint
 
 Alice, who is not blacklisted, makes a mint transaction. This is done in the same way
-as normal Nightfall mint.
+as normal Nightfall mint, although the zkp public key is a public parameter so that the shield contract can check the correct key (the one associated with Alice) has been used.
 
 The shield contract, as well as carrying out its normal mint actions, checks whether Alice's her Ethereum Address (msg.sender) has a zkp public key associated with it.  If does, the smart contract checks whether her zkp public key is in the Blacklist.  Finding that she isn't, it adds her zkp public key to the Public Key Tree.  It also stores an Ethereum Address -> Public key lookup, for ease of blacklisting (this could be avoided by working directly with the Ethereum address but that would require computation of a keccak hash in the proof, which is problematic)
 

@@ -9,8 +9,9 @@ import "./Ownable.sol";
 import "./MerkleTree.sol";
 import "./Verifier_Interface.sol";
 import "./ERC20Interface.sol";
+import "./PublicKeyTree.sol";
 
-contract FTokenShield is Ownable, MerkleTree {
+contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
   // ENUMS:
   enum TransactionTypes { Mint, Transfer, Burn, SimpleBatchTransfer }
 
@@ -88,15 +89,23 @@ contract FTokenShield is Ownable, MerkleTree {
   /**
   The mint function accepts fungible tokens from the specified fToken ERC-20 contract and creates the same amount as a commitment.
   */
-  function mint(uint256[] calldata _proof, uint256[] calldata _inputs, uint128 _value, bytes32 _commitment) external {
+  function mint(uint256[] calldata _proof, uint256[] calldata _inputs, uint128 _value, bytes32 _commitment, bytes32 zkpPublicKey) external {
 
       // gas measurement:
       uint256 gasCheckpoint = gasleft();
 
       // Check that the publicInputHash equals the hash of the 'public inputs':
       bytes31 publicInputHash = bytes31(bytes32(_inputs[0]) << 8);
-      bytes31 publicInputHashCheck = bytes31(sha256(abi.encodePacked(uint128(_value), _commitment)) << 8); // Note that we force the _value to be left-padded with zeros to fill 128-bits, so as to match the padding in the hash calculation performed within the zokrates proof.
+      bytes31 publicInputHashCheck = bytes31(sha256(abi.encodePacked(uint128(_value), _commitment, zkpPublicKey)) << 8); // Note that we force the _value to be left-padded with zeros to fill 128-bits, so as to match the padding in the hash calculation performed within the zokrates proof.
       require(publicInputHashCheck == publicInputHash, "publicInputHash cannot be reconciled");
+
+      // Check that we're not blacklisted and, if not, add us to the public key Merkle tree
+      if (keyLookup[msg.sender] == 0) {
+        keyLookup[msg.sender] = zkpPublicKey; // add unknown user to key lookup
+        addPublicKeyToTree(zkpPublicKey); // update the Merkle tree with the new leaf
+      }
+      require (keyLookup[msg.sender] == zkpPublicKey, "The ZKP public key has not been registered to this address");
+      require (blacklist[msg.sender] == 0, "This address is blacklisted - transaction stopped");
 
       // gas measurement:
       uint256 gasUsedByShieldContract = gasCheckpoint - gasleft();
@@ -150,12 +159,13 @@ contract FTokenShield is Ownable, MerkleTree {
 
       // Unfortunately stack depth constraints mandate an array, so we can't use more friendly names.
       // However, here's a handy guide:
-      // publicInputs[0] - root
+      // publicInputs[0] - root (of the commitment Merkle tree)
       // publicInputs[1] - nullifierC
       // publicInputs[2] - nullifierD
       // publicInputs[3] - commitmentE
       // publicInputs[4] - commitmentF
-      // publicInputs[5..] - elGamal
+      // publicInputs[5] - root (of public key Merkle tree)
+      // publicInputs[6..] - elGamal
 
       // check inputs vs on-chain states
       require(roots[publicInputs[0]] == publicInputs[0], "The input root has never been the root of the Merkle Tree");
@@ -163,7 +173,7 @@ contract FTokenShield is Ownable, MerkleTree {
       require(publicInputs[3] != publicInputs[4], "The new commitments (commitmentE and commitmentF) must be different!");
       require(nullifiers[publicInputs[1]] == 0, "The commitment being spent (commitmentE) has already been nullified!");
       require(nullifiers[publicInputs[2]] == 0, "The commitment being spent (commitmentF) has already been nullified!");
-
+      require(publicKeyRoots[publicInputs[5]] == publicInputs[5],"The input public key root has never been a root of the Merkle Tree");
       // update contract states
       nullifiers[publicInputs[1]] = publicInputs[1]; //remember we spent it
       nullifiers[publicInputs[2]] = publicInputs[2]; //remember we spent it

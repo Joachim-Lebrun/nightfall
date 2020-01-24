@@ -26,7 +26,7 @@ module.exports = {
   // Tree parameters. You also need to set these in the MerkleTree.sol contract, and in Nightfall's ./config/merkle-tree/default.js config file.
   LEAF_HASHLENGTH: 32, // expected length of an input to a hash in bytes
   NODE_HASHLENGTH: 27, // expected length of inputs to hashes up the merkle tree, in bytes
-
+  PUBLIC_KEY_TREE_HEIGHT: 32, // Height of the PUBLIC KEY Merkle tree (defined so that of there was just a root, height would be 0)
   // *****
 
   BATCH_PROOF_SIZE: 20, // the number of proofs in a batch (you will need to redo the proofs if you change this)
@@ -55,7 +55,9 @@ module.exports = {
     BigInt('2464057452572750886'),
   ],
 
-  ZOKRATES_PRIME: '21888242871839275222246405745257275088548364400416034343698204186575808495617', // decimal representation of the prime p of GaloisField(p)
+  ZOKRATES_PRIME: BigInt(
+    '21888242871839275222246405745257275088548364400416034343698204186575808495617',
+  ), // decimal representation of the prime p of GaloisField(p)
 
   // *****
 

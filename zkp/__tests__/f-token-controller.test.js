@@ -181,7 +181,7 @@ describe('f-token-controller.js tests', () => {
     // now Bob should have 40 (E) ETH
   });
 
-  test('Should mint another ERC-20 commitment Z_B_G for Bob for asset G', async () => {
+  test.skip('Should mint another ERC-20 commitment Z_B_G for Bob for asset G', async () => {
     const { commitment: zTest, commitmentIndex: zIndex } = await controller.mint(
       G,
       pkB,
@@ -202,7 +202,7 @@ describe('f-token-controller.js tests', () => {
     expect(Z_B_G).toEqual(zTest);
   });
 
-  test('Should transfer an ERC-20 commitment to Eve', async () => {
+  test.skip('Should transfer an ERC-20 commitment to Eve', async () => {
     // H becomes Eve's, I is change returned to Bob
     const inputCommitments = [
       { value: E, salt: sAToBE, commitment: Z_B_E, commitmentIndex: zInd1 + 2 },
@@ -229,7 +229,7 @@ describe('f-token-controller.js tests', () => {
     );
   });
 
-  test(`Should burn Alice's remaining ERC-20 commitment`, async () => {
+  test.skip(`Should burn Alice's remaining ERC-20 commitment`, async () => {
     const bal1 = await controller.getBalance(accounts[3]);
     const bal = await controller.getBalance(accounts[0]);
     console.log('accounts[3]', bal1.toNumber());

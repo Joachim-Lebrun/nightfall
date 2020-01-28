@@ -234,14 +234,16 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
       emit GasUsed(gasUsedByShieldContract, gasUsedByVerifierContract);
   }
 
-  function burn(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32 _root, bytes32 _nullifier, uint128 _value, uint256 _payTo) external {
+
+  function burn(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32[] calldata publicInputs) external {
 
       // gas measurement:
       uint256 gasCheckpoint = gasleft();
 
       // Check that the publicInputHash equals the hash of the 'public inputs':
       bytes31 publicInputHash = bytes31(bytes32(_inputs[0]) << 8);
-      bytes31 publicInputHashCheck = bytes31(sha256(abi.encodePacked(_root, _nullifier, uint128(_value), _payTo)) << 8); // Note that although _payTo represents an address, we have declared it as a uint256. This is because we want it to be abi-encoded as a bytes32 (left-padded with zeros) so as to match the padding in the hash calculation performed within the zokrates proof. Similarly, we force the _value to be left-padded with zeros to fill 128-bits.
+      // This line can be made neater when we can use pragma 0.6.0 and array slices
+      bytes31 publicInputHashCheck = bytes31(sha256(abi.encodePacked(publicInputs)) << 8); // Note that although _payTo represents an address, we have declared it as a uint256. This is because we want it to be abi-encoded as a bytes32 (left-padded with zeros) so as to match the padding in the hash calculation performed within the zokrates proof. Similarly, we force the _value to be left-padded with zeros to fill 128-bits.
       require(publicInputHashCheck == publicInputHash, "publicInputHash cannot be reconciled");
 
       // gas measurement:
@@ -256,17 +258,26 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
       uint256 gasUsedByVerifierContract = gasCheckpoint - gasleft();
       gasCheckpoint = gasleft();
 
-      // check inputs vs on-chain states
-      require(roots[_root] == _root, "The input root has never been the root of the Merkle Tree");
-      require(nullifiers[_nullifier]==0, "The commitment being spent has already been nullified!");
+      // Unfortunately stack depth constraints mandate an array, so we can't use more friendly names.
+      // publicInputs[0] - root (of the commitment Merkle tree)
+      // publicInputs[1] - nullifier
+      // publicInputs[2] - value
+      // publicInputs[3] - payTo address
+      // publicInputs[4] - root (of public key Merkle tree)
+      // publicInputs[5:15] - elGamal (10 elements)
 
-      nullifiers[_nullifier] = _nullifier; // add the nullifier to the list of nullifiers
+      // check inputs vs on-chain states
+      require(roots[publicInputs[0]] == publicInputs[0], "The input root has never been the root of the Merkle Tree");
+      require(nullifiers[publicInputs[1]]==0, "The commitment being spent has already been nullified!");
+      require(publicKeyRoots[publicInputs[4]] == publicInputs[4],"The input public key root has never been a root of the Merkle Tree");
+
+      nullifiers[publicInputs[1]] = publicInputs[1]; // add the nullifier to the list of nullifiers
 
       //Finally, transfer the fungible tokens from this contract to the nominated address
-      address payToAddress = address(_payTo); // we passed _payTo as a uint256, to ensure the packing was correct within the sha256() above
-      fToken.transfer(payToAddress, _value);
+      address payToAddress = address(uint256(publicInputs[3])); // we passed _payTo as a bytes32, to ensure the packing was correct within the sha256() above
+      fToken.transfer(payToAddress, uint256(publicInputs[2]));
 
-      emit Burn(_nullifier);
+      emit Burn(publicInputs[1]);
 
       // gas measurement:
       gasUsedByShieldContract = gasUsedByShieldContract + gasCheckpoint - gasleft();

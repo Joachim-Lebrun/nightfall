@@ -90,11 +90,11 @@ Performs El-Gamal encryption
 this function is called
 */
 export function enc(randomSecret, strings) {
-  if (AUTHORITY_PUBLIC_KEYS.length !== strings.length) {
+  if (AUTHORITY_PUBLIC_KEYS.length < strings.length) {
     console.log('number of authority public keys:', AUTHORITY_PUBLIC_KEYS.length);
     console.log('number of message strings:', strings.length);
     throw new Error(
-      'The number of authority public keys and the number of messages must be the same',
+      'The number of authority public keys must greater than or equal to the number of messages',
     );
   }
   // eslint-disable-next-line valid-typeof

@@ -16,7 +16,7 @@ async function getPublicKeyTreeData(contractInstance, _key) {
   const siblingPath = []; // sibling path
   let s = 0; // index of sibling path node in the merkle tree
   let t = 0; // temp index for next highest path node in the merkle tree
-  let p = commitmentIndex; // we need to shift between numbering from the root and numbering from the first leaf
+  let p = commitmentIndex.toNumber();
 
   for (let r = PUBLIC_KEY_TREE_HEIGHT; r > 0; r--) {
     if (p % 2 === 0) {
@@ -29,7 +29,7 @@ async function getPublicKeyTreeData(contractInstance, _key) {
     siblingPath[r] = contractInstance.M.call(s);
     p = t;
   }
-  siblingPath[0] = contractInstance.M(0); // store the root value here
+  siblingPath[0] = contractInstance.M.call(0); // store the root value here
   return {
     leafIndex: commitmentIndex - FIRST_LEAF_INDEX,
     siblingPath: await Promise.all(siblingPath),

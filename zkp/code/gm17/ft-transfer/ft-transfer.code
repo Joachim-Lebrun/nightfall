@@ -3,7 +3,7 @@ import "hashes/sha256/1024bit.code" as sha256of1024
 import "hashes/sha256/512bit.code" as sha256of512
 import "utils/pack/unpack128.code" as unpack128
 import "utils/pack/nonStrictUnpack256.code" as unpack256
-import "../common/el-gamal.zok" as enc3
+import "../common/el-gamal3.zok" as enc3
 import "hashes/sha256/IVconstants.code" as IVconstants
 import "hashes/sha256/shaRoundNoBoolCheck.code" as sha256
 import "../common/order-fields.zok" as orderFields
@@ -226,6 +226,7 @@ def main(field publicInputHash, private field valueC, private field[2] secretKey
 	field[256] commitmentEBitsCheck = sha256of1024(preimage1024[0..256], preimage1024[256..512], preimage1024[512..768], preimage1024[768..1024]) // commitmentE
 
 	// And the encryption of the transaction (extend the value up to 256 bits)
+
 	field[8] w = enc3([...[0;128], ...valueEBits], publicKeyABits, publicKeyBBits, authorityPublicKey1, authorityPublicKey2, authorityPublicKey3, randomSecret)
 	// check the encryption has been computed correctly
 	w == encryption

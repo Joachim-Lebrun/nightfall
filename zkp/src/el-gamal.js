@@ -146,7 +146,7 @@ export function bruteForce(m, gen) {
     const p = scalarMult(guess, GENERATOR);
     if (p[0] === m[0] && p[1] === m[1]) return guess;
   }
-  throw new Error('all guesses exhausted and no decrypt found');
+  return 'no decrypt found';
 }
 
 export function* rangeGenerator(max) {

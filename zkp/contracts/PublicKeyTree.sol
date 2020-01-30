@@ -39,7 +39,20 @@ contract PublicKeyTree is MiMC, Ownable {
     uint256 blacklistedIndex = L[blacklistedKey];
     require(blacklistedIndex >= FIRST_LEAF_INDEX, 'The blacklisted index is not that of a leaf');
     delete M[blacklistedIndex];
-    // delete L[blacklistedKey]; may as well keep this so that the sibling path calculation can still run (but won't prove)
+    // and recalculate the root
+    bytes32 root = updatePathToRoot(blacklistedIndex);
+    publicKeyRoots[root] = root;
+  }
+
+  function unBlacklistAddress(address addr) external onlyOwner {
+    //remove the reformed charater from the blacklist
+    delete blacklist[addr];
+    // add them back to the Merkle tree
+    bytes32 blacklistedKey = bytes32(uint256(keyLookup[addr]) % q); //keyLookup stores the key before conversition to Fq
+    require(uint256(blacklistedKey) != 0, 'The key being blacklisted does not exist');
+    uint256 blacklistedIndex = L[blacklistedKey];
+    require(blacklistedIndex >= FIRST_LEAF_INDEX, 'The blacklisted index is not that of a leaf');
+    M[blacklistedIndex] = blacklistedKey;
     // and recalculate the root
     bytes32 root = updatePathToRoot(blacklistedIndex);
     publicKeyRoots[root] = root;

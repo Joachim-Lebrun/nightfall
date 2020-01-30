@@ -25,14 +25,14 @@ const options = yargs
   .option('list', { describe: 'list accounts on this node', type: 'boolean' })
   .option('remove', { describe: 'remove address from blacklist', type: 'string' }).argv;
 
-function bruteForce(m1) {
+function bruteForce(m) {
   let i = 0;
   let p = [];
   do {
     p = scalarMult(i, GENERATOR);
     i++;
     if (i > 1000000) throw new Error('value range exceeded and no decrypt found');
-  } while (p[0] !== m1[0] && p[1] !== m1[1]);
+  } while (p[0] !== m[0] && p[1] !== m[1]);
   return i - 1;
 }
 

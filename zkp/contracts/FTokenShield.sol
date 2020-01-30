@@ -17,9 +17,9 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
 
   // EVENTS:
   // Observers may wish to listen for nullification of commitments:
-  event Transfer(bytes32 nullifier1, bytes32 nullifier2);
+  event Transfer(bytes32[] publicInputs);
   event SimpleBatchTransfer(bytes32 nullifier);
-  event Burn(bytes32 nullifier);
+  event Burn(bytes32[] publicInputs);
 
   // Observers may wish to listen for zkSNARK-related changes:
   event VerifierChanged(address newVerifierContract);
@@ -157,6 +157,7 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
       gasUsed[2] = gasUsed[0] - gasleft();
       gasUsed[0] = gasleft();
 
+      //TODO - need to enforce correct public keys!!
       // Unfortunately stack depth constraints mandate an array, so we can't use more friendly names.
       // However, here's a handy guide:
       // publicInputs[0] - root (of the commitment Merkle tree)
@@ -169,7 +170,7 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
 
       // check inputs vs on-chain states
       require(roots[publicInputs[0]] == publicInputs[0], "The input root has never been the root of the Merkle Tree");
-      require(publicInputs[1] !=publicInputs[2], "The two input nullifiers must be different!");
+      require(publicInputs[1] != publicInputs[2], "The two input nullifiers must be different!");
       require(publicInputs[3] != publicInputs[4], "The new commitments (commitmentE and commitmentF) must be different!");
       require(nullifiers[publicInputs[1]] == 0, "The commitment being spent (commitmentE) has already been nullified!");
       require(nullifiers[publicInputs[2]] == 0, "The commitment being spent (commitmentF) has already been nullified!");
@@ -185,7 +186,7 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
       latestRoot = insertLeaves(leaves); // recalculate the root of the merkleTree as it's now different
       roots[latestRoot] = latestRoot; // and save the new root to the list of roots
 
-      emit Transfer(publicInputs[1], publicInputs[2]);
+      emit Transfer(publicInputs);
 
       // gas measurement:
       gasUsed[1] = gasUsed[1] + gasUsed[0] - gasleft();
@@ -264,7 +265,7 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
       // publicInputs[2] - value
       // publicInputs[3] - payTo address
       // publicInputs[4] - root (of public key Merkle tree)
-      // publicInputs[5:15] - elGamal (10 elements)
+      // publicInputs[5:11] - elGamal (6 elements)
 
       // check inputs vs on-chain states
       require(roots[publicInputs[0]] == publicInputs[0], "The input root has never been the root of the Merkle Tree");
@@ -277,7 +278,7 @@ contract FTokenShield is Ownable, MerkleTree, PublicKeyTree {
       address payToAddress = address(uint256(publicInputs[3])); // we passed _payTo as a bytes32, to ensure the packing was correct within the sha256() above
       fToken.transfer(payToAddress, uint256(publicInputs[2]));
 
-      emit Burn(publicInputs[1]);
+      emit Burn(publicInputs);
 
       // gas measurement:
       gasUsedByShieldContract = gasUsedByShieldContract + gasCheckpoint - gasleft();

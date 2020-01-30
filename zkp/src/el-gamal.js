@@ -130,6 +130,25 @@ export function dec(encryption) {
     return scalarMult(e, c0);
   });
   // then decrypt
-  const messages = encryptedMessages.map((c, i) => add(c + negate(sharedSecrets[i])));
+  const messages = encryptedMessages.map((c, i) => add(c, negate(sharedSecrets[i])));
   return messages;
+}
+
+/**
+The decryption gives curve points, which were originally mapped to a value.
+Unfortunately, reversing that mapping requires brute forcing discrete logarithm.
+Forturnately, there aren't many values that we need to check so it's not too onerous
+@param {array} m - ordered pair mod q representing the decrypted curve point
+@param {generator} gen - generator (implements generator interface) for brute force guesses
+*/
+export function bruteForce(m, gen) {
+  for (const guess of gen) {
+    const p = scalarMult(guess, GENERATOR);
+    if (p[0] === m[0] && p[1] === m[1]) return guess;
+  }
+  throw new Error('all guesses exhausted and no decrypt found');
+}
+
+export function* rangeGenerator(max) {
+  for (let i = 0; i < max; i++) yield i;
 }

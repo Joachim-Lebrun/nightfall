@@ -1,11 +1,10 @@
 /* eslint-disable import/no-unresolved */
 
 import bc from '../src/web3';
-
 import utils from '../src/zkpUtils';
 import controller from '../src/f-token-controller';
 import { getVkId, getTruffleContractInstance } from '../src/contractUtils';
-import { setAuthorityPrivateKeys } from '../src/el-gamal';
+import { setAuthorityPrivateKeys, dec, bruteForce, rangeGenerator } from '../src/el-gamal';
 
 jest.setTimeout(7200000);
 
@@ -41,6 +40,7 @@ let zInd3;
 let accounts;
 let fTokenShieldJson;
 let fTokenShieldAddress;
+let fTokenShieldInstance;
 
 beforeAll(async () => {
   setAuthorityPrivateKeys(); // setup test keys
@@ -49,6 +49,7 @@ beforeAll(async () => {
   const { contractJson, contractInstance } = await getTruffleContractInstance('FTokenShield');
   fTokenShieldAddress = contractInstance.address;
   fTokenShieldJson = contractJson;
+  fTokenShieldInstance = contractInstance;
   // blockchainOptions = { account, fTokenShieldJson, fTokenShieldAddress };
   S_A_C = await utils.rndHex(32);
   S_A_D = await utils.rndHex(32);
@@ -73,6 +74,8 @@ describe('f-token-controller.js tests', () => {
   // Alice sends Bob E and gets F back (Bob has 40 ETH, Alice has 10 ETH)
   // Bob then has E+G at total of 70 ETH
   // Bob sends H to Alice and keeps I (Bob has 50 ETH and Alice has 10+20=30 ETH)
+  let transferTxReceipt;
+  let burnTxReceipt;
 
   test('Should create 10000 tokens in accounts[0] and accounts[1]', async () => {
     // fund some accounts with FToken
@@ -161,7 +164,7 @@ describe('f-token-controller.js tests', () => {
       { value: D, salt: S_A_D, commitment: Z_A_D, commitmentIndex: zInd2 },
     ];
     const outputCommitments = [{ value: E, salt: sAToBE }, { value: F, salt: sAToAF }];
-    await controller.transfer(
+    ({ txReceipt: transferTxReceipt } = await controller.transfer(
       inputCommitments,
       outputCommitments,
       pkB,
@@ -177,7 +180,7 @@ describe('f-token-controller.js tests', () => {
         outputDirectory: `${process.cwd()}/code/gm17/ft-transfer`,
         pkPath: `${process.cwd()}/code/gm17/ft-transfer/proving.key`,
       },
-    );
+    ));
     // now Bob should have 40 (E) ETH
   });
 
@@ -202,31 +205,44 @@ describe('f-token-controller.js tests', () => {
     expect(Z_B_G).toEqual(zTest);
   });
 
-  test('Should transfer an ERC-20 commitment to Eve', async () => {
+  test(`Should blacklist Bob so he can't transfer an ERC-20 commitment to Eve`, async () => {
+    await fTokenShieldInstance.blacklistAddress(accounts[1], {
+      from: accounts[0],
+      gas: 6500000,
+      gasPrice: 20000000000,
+    });
+
     // H becomes Eve's, I is change returned to Bob
     const inputCommitments = [
       { value: E, salt: sAToBE, commitment: Z_B_E, commitmentIndex: zInd1 + 2 },
       { value: G, salt: S_B_G, commitment: Z_B_G, commitmentIndex: zInd3 },
     ];
     const outputCommitments = [{ value: H, salt: sBToEH }, { value: I, salt: sBToBI }];
-
-    await controller.transfer(
-      inputCommitments,
-      outputCommitments,
-      pkE,
-      skB,
-      await getVkId('TransferFToken'),
-      {
-        account: accounts[1],
-        fTokenShieldJson,
-        fTokenShieldAddress,
-      },
-      {
-        codePath: `${process.cwd()}/code/gm17/ft-transfer/out`,
-        outputDirectory: `${process.cwd()}/code/gm17/ft-transfer`,
-        pkPath: `${process.cwd()}/code/gm17/ft-transfer/proving.key`,
-      },
-    );
+    expect.assertions(1);
+    try {
+      await controller.transfer(
+        inputCommitments,
+        outputCommitments,
+        pkE,
+        skB,
+        await getVkId('TransferFToken'),
+        {
+          account: accounts[1],
+          fTokenShieldJson,
+          fTokenShieldAddress,
+        },
+        {
+          codePath: `${process.cwd()}/code/gm17/ft-transfer/out`,
+          outputDirectory: `${process.cwd()}/code/gm17/ft-transfer`,
+          pkPath: `${process.cwd()}/code/gm17/ft-transfer/proving.key`,
+        },
+      );
+    } catch (e) {
+      console.log(e);
+      expect(e.message).toMatch(
+        'Returned error: VM Exception while processing transaction: revert The proof has not been verified by the contract -- Reason given: The proof has not been verified by the contract.',
+      );
+    }
   });
 
   test(`Should burn Alice's remaining ERC-20 commitment`, async () => {
@@ -234,7 +250,7 @@ describe('f-token-controller.js tests', () => {
     const bal = await controller.getBalance(accounts[0]);
     console.log('accounts[3]', bal1.toNumber());
     console.log('accounts[0]', bal.toNumber());
-    await controller.burn(
+    ({ txReceipt: burnTxReceipt } = await controller.burn(
       F,
       skA,
       sAToAF,
@@ -252,9 +268,40 @@ describe('f-token-controller.js tests', () => {
         outputDirectory: `${process.cwd()}/code/gm17/ft-burn`,
         pkPath: `${process.cwd()}/code/gm17/ft-burn/proving.key`,
       },
-    );
+    ));
     const bal2 = await controller.getBalance(accounts[3]);
     console.log('accounts[3]', bal2.toNumber());
     expect(parseInt(F, 16)).toEqual(bal2 - bal1);
+  });
+
+  test(`Should decrypt Alice's Transfer commitment to Bob`, async () => {
+    const publicInputLog = transferTxReceipt.logs.filter(log => {
+      return log.event === 'Transfer';
+    });
+    const { publicInputs } = publicInputLog[0].args;
+    const c0 = [BigInt(publicInputs[6]), BigInt(publicInputs[7])];
+    const c1 = [BigInt(publicInputs[8]), BigInt(publicInputs[9])];
+    const c2 = [BigInt(publicInputs[10]), BigInt(publicInputs[11])];
+    const c3 = [BigInt(publicInputs[12]), BigInt(publicInputs[13])];
+    const [m1, m2, m3] = dec([c0, c1, c2, c3]);
+    const pkAlice = bruteForce(m2, [pkA, pkB, pkE]);
+    const pkBob = bruteForce(m3, [pkA, pkB, pkE]);
+    const range = rangeGenerator(10000);
+    const value = bruteForce(m1, range);
+    expect(BigInt(value)).toEqual(BigInt(E));
+    expect(pkAlice).toMatch(pkA);
+    expect(pkBob).toMatch(pkB);
+  });
+
+  test(`Should decrypt Alice's Burn commitment`, async () => {
+    const publicInputLog = burnTxReceipt.logs.filter(log => {
+      return log.event === 'Burn';
+    });
+    const { publicInputs } = publicInputLog[0].args;
+    const c0 = [BigInt(publicInputs[5]), BigInt(publicInputs[6])];
+    const c1 = [BigInt(publicInputs[7]), BigInt(publicInputs[8])];
+    const [m1] = dec([c0, c1]);
+    const pkAlice = bruteForce(m1, [pkA, pkB, pkE]);
+    expect(pkAlice).toMatch(pkA);
   });
 });

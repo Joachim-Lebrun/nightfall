@@ -1,5 +1,6 @@
 /* eslint-disable import/no-unresolved */
 
+import nightlite from '@eyblockchain/nightlite';
 import bc from '../src/web3';
 import utils from '../src/zkpUtils';
 import controller from '../src/f-token-controller';
@@ -114,7 +115,7 @@ describe('f-token-controller.js tests', () => {
 
   test('Should mint an ERC-20 commitment Z_A_C for Alice for asset C', async () => {
     console.log('Alices account ', (await controller.getBalance(accounts[0])).toNumber());
-    const { commitment: zTest, commitmentIndex: zIndex } = await controller.mint(
+    const { commitment: zTest, commitmentIndex: zIndex } = await nightlite.mint(
       C,
       pkA,
       S_A_C,
@@ -136,7 +137,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test('Should mint another ERC-20 commitment Z_A_D for Alice for asset D', async () => {
-    const { commitment: zTest, commitmentIndex: zIndex } = await controller.mint(
+    const { commitment: zTest, commitmentIndex: zIndex } = await nightlite.mint(
       D,
       pkA,
       S_A_D,
@@ -164,7 +165,7 @@ describe('f-token-controller.js tests', () => {
       { value: D, salt: S_A_D, commitment: Z_A_D, commitmentIndex: zInd2 },
     ];
     const outputCommitments = [{ value: E, salt: sAToBE }, { value: F, salt: sAToAF }];
-    ({ txReceipt: transferTxReceipt } = await controller.transfer(
+    ({ txReceipt: transferTxReceipt } = await nightlite.transfer(
       inputCommitments,
       outputCommitments,
       pkB,
@@ -185,7 +186,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test('Should mint another ERC-20 commitment Z_B_G for Bob for asset G', async () => {
-    const { commitment: zTest, commitmentIndex: zIndex } = await controller.mint(
+    const { commitment: zTest, commitmentIndex: zIndex } = await nightlite.mint(
       G,
       pkB,
       S_B_G,
@@ -220,7 +221,7 @@ describe('f-token-controller.js tests', () => {
     const outputCommitments = [{ value: H, salt: sBToEH }, { value: I, salt: sBToBI }];
     expect.assertions(1);
     try {
-      await controller.transfer(
+      await nightlite.transfer(
         inputCommitments,
         outputCommitments,
         pkE,
@@ -259,7 +260,7 @@ describe('f-token-controller.js tests', () => {
     ];
     const outputCommitments = [{ value: H, salt: sBToEH }, { value: I, salt: sBToBI }];
 
-    await controller.transfer(
+    await nightlite.transfer(
       inputCommitments,
       outputCommitments,
       pkE,
@@ -283,7 +284,7 @@ describe('f-token-controller.js tests', () => {
     const bal = await controller.getBalance(accounts[0]);
     console.log('accounts[3]', bal1.toNumber());
     console.log('accounts[0]', bal.toNumber());
-    ({ txReceipt: burnTxReceipt } = await controller.burn(
+    ({ txReceipt: burnTxReceipt } = await nightlite.burn(
       F,
       skA,
       sAToAF,
@@ -308,7 +309,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test(`Should decrypt Alice's Transfer commitment to Bob`, () => {
-    const decrypt = controller.decryptTransaction(transferTxReceipt, {
+    const decrypt = nightlite.decryptTransaction(transferTxReceipt, {
       type: 'Transfer',
       guessers: [rangeGenerator(1000000), [pkA, pkB, pkE], [pkA, pkB, pkE]],
     });
@@ -318,7 +319,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test(`Should decrypt Alice's Burn commitment`, () => {
-    const decrypt = controller.decryptTransaction(burnTxReceipt, {
+    const decrypt = nightlite.decryptTransaction(burnTxReceipt, {
       type: 'Burn',
       guessers: [[pkA, pkB, pkE]],
     });

@@ -16,7 +16,7 @@ const logger = require('./logger');
 const Element = require('./Element');
 const Web3 = require('./provider');
 const erc20Interface = require('./contracts/ERC20Interface.json');
-const { enc, AUTHORITY_PUBLIC_KEYS, dec, bruteForce } = require('./el-gamal');
+const { enc, AUTHORITY_PUBLIC_KEYS, dec, bruteForce } = require('./elgamal');
 const { getPublicKeyTreeData } = require('./public-key-tree');
 
 /**
@@ -97,7 +97,6 @@ function decryptTransaction(txReceipt, { type, guessers }) {
  * @param {String} amount - the value of the coin
  * @param {String} ownerPublicKey - Alice's public key
  * @param {String} salt - Alice's token serial number as a hex string
- * @param {String} vkId
  * @param {Object} blockchainOptions
  * @param {String} blockchainOptions.fTokenShieldJson - ABI of fTokenShieldInstance
  * @param {String} blockchainOptions.fTokenShieldAddress - Address of deployed fTokenShieldContract
@@ -105,10 +104,11 @@ function decryptTransaction(txReceipt, { type, guessers }) {
  * @returns {String} commitment - Commitment of the minted coins
  * @returns {Number} commitmentIndex
  */
-async function mint(amount, ownerPublicKey, salt, vkId, blockchainOptions, zokratesOptions) {
+async function mint(amount, ownerPublicKey, salt, blockchainOptions, zokratesOptions) {
   const { fTokenShieldJson, fTokenShieldAddress } = blockchainOptions;
   const account = utils.ensure0x(blockchainOptions.account);
 
+  logger.debug('zokratesOptions', zokratesOptions);
   const {
     codePath,
     outputDirectory,
@@ -208,14 +208,12 @@ async function mint(amount, ownerPublicKey, salt, vkId, blockchainOptions, zokra
   logger.debug(proof);
   logger.debug('publicInputs:');
   logger.debug(publicInputs);
-  logger.debug(`vkId: ${vkId}`);
 
   // Mint the commitment
   logger.debug('Approving ERC-20 spend from: ', fTokenShieldInstance.address);
   const txReceipt = await fTokenShieldInstance.mint(
     proof,
     publicInputs,
-    vkId,
     amount,
     commitment,
     ownerPublicKey,
@@ -263,7 +261,6 @@ async function transfer(
   _outputCommitments,
   receiverPublicKey,
   senderSecretKey,
-  vkId,
   blockchainOptions,
   zokratesOptions,
 ) {
@@ -321,7 +318,7 @@ async function transfer(
   );
 
   // compute the encryption of the transfer values
-  const randomSecret = BigInt(await utils.rndHex(27)); // ideally needs to be smaller than Fq TODO - try 32 bytes when it works
+  const randomSecret = BigInt(await utils.randomHex(27)); // ideally needs to be smaller than Fq TODO - try 32 bytes when it works
   const encryption = enc(randomSecret, [
     outputCommitments[0].value,
     senderPublicKey,
@@ -556,13 +553,10 @@ async function transfer(
   logger.debug('proof:');
   logger.debug(proof);
 
-  logger.debug(`vkId: ${vkId}`);
-
   // Transfers commitment
   const txReceipt = await fTokenShieldInstance.transfer(
     proof,
     utils.formatInputsForZkSnark([new Element(publicInputHash, 'field', 248, 1)]),
-    vkId,
     publicInputsArray,
     {
       from: account,
@@ -611,7 +605,6 @@ async function simpleFungibleBatchTransfer(
   _outputCommitments,
   receiversPublicKeys,
   senderSecretKey,
-  vkId,
   blockchainOptions,
   zokratesOptions,
 ) {
@@ -741,13 +734,10 @@ async function simpleFungibleBatchTransfer(
   logger.debug('publicInputs:');
   logger.debug(publicInputs);
 
-  logger.debug(`vkId: ${vkId}`);
-
   // send the token to Bob by transforming the commitment
   const txReceipt = await fTokenShieldInstance.simpleBatchTransfer(
     proof,
     publicInputs,
-    vkId,
     root,
     inputCommitment.nullifier,
     outputCommitments.map(item => item.commitment),
@@ -794,7 +784,6 @@ async function burn(
   salt,
   commitment,
   commitmentIndex,
-  vkId,
   blockchainOptions,
   zokratesOptions,
 ) {
@@ -826,7 +815,7 @@ async function burn(
   const nullifier = utils.concatenateThenHash(salt, receiverSecretKey);
   // compute the encryption of the transfer values
   const receiverPublicKey = utils.hash(receiverSecretKey); // TODO this is really the sender - rename
-  const randomSecret = BigInt(await utils.rndHex(27)); // ideally needs to be smaller than Fq TODO - try 32 bytes when it works
+  const randomSecret = BigInt(await utils.randomHex(27)); // ideally needs to be smaller than Fq TODO - try 32 bytes when it works
   const encryption = enc(randomSecret, [receiverPublicKey]);
 
   // compute the sibling path for the zkp public key Merkle tree used for whitelisting
@@ -948,10 +937,9 @@ async function burn(
   logger.debug(proof);
   logger.debug('publicInputs:');
   logger.debug(publicInputs);
-  logger.debug(`vkId: ${vkId}`);
 
   // Burn the commitment and return tokens to the payTo account.
-  const txReceipt = await fTokenShieldInstance.burn(proof, publicInputs, vkId, publicInputsArray, {
+  const txReceipt = await fTokenShieldInstance.burn(proof, publicInputs, publicInputsArray, {
     from: account,
     gas: 6500000,
     gasPrice: config.GASPRICE,

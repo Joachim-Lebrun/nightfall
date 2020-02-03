@@ -2,7 +2,7 @@
   "name": "@eyblockchain/nightlite",
   "description": "Minimal required library for the Nightfall protocol",
   "license": "MIT",
-  "version": "0.0.0-5f60d9f9",
+  "version": "0.0.0-8769566d",
   "scripts": {
     "start": "node build/index.js",
     "dev": "nodemon build/index.js",
@@ -12,7 +12,7 @@
     "lint:md": "markdownlint -i node_modules -i build .",
     "validate": "cod-scripts validate",
     "lint:sol": "solium -d contracts",
-    "test": "docker-compose exec zkp jest --verbose --runInBand --forceExit ./__tests__/*.test.js"
+    "test": "docker-compose exec zkp jest --verbose --runInBand ./__tests__/*.test.js"
   },
   "dependencies": {
     "@eyblockchain/zokrates.js": "^1.2.0",

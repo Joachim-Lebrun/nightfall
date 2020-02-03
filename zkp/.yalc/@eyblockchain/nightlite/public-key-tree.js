@@ -1,4 +1,4 @@
-const { PUBLIC_KEY_TREE_HEIGHT, ZOKRATES_PRIME } = require('config');
+const { PUBLIC_KEY_TREE_HEIGHT, ZOKRATES_PRIME } = require('./config');
 
 const FIRST_LEAF_INDEX = 2 ** PUBLIC_KEY_TREE_HEIGHT - 1;
 /**

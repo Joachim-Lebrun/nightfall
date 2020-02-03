@@ -2,7 +2,7 @@
 functions to support El-Gamal encryption over a BabyJubJub curve
 */
 
-const { BABYJUBJUB, ZOKRATES_PRIME, TEST_PRIVATE_KEYS } = require('config');
+const { BABYJUBJUB, ZOKRATES_PRIME, TEST_PRIVATE_KEYS } = require('./config');
 const { modDivide } = require('./modular-division');
 const utils = require('./utils');
 

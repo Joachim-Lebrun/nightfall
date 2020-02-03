@@ -2,7 +2,7 @@
   "version": "v1",
   "packages": {
     "@eyblockchain/nightlite": {
-      "signature": "5f60d9f9d899e11a71be2583541d6538",
+      "signature": "8769566da31bd99728ad3ac8396c9703",
       "file": true,
       "replaced": "^1.4.4"
     }

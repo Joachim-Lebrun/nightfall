@@ -183,7 +183,7 @@ describe('f-token-controller.js tests', () => {
     // now Bob should have 40 (E) ETH
   });
 
-  test.skip('Should mint another ERC-20 commitment Z_B_G for Bob for asset G', async () => {
+  test('Should mint another ERC-20 commitment Z_B_G for Bob for asset G', async () => {
     const { commitment: zTest, commitmentIndex: zIndex } = await erc20.mint(
       G,
       pkB,
@@ -203,7 +203,7 @@ describe('f-token-controller.js tests', () => {
     expect(Z_B_G).toEqual(zTest);
   });
 
-  test.skip(`Should blacklist Bob so he can't transfer an ERC-20 commitment to Eve`, async () => {
+  test(`Should blacklist Bob so he can't transfer an ERC-20 commitment to Eve`, async () => {
     await fTokenShieldInstance.blacklistAddress(accounts[1], {
       from: accounts[0],
       gas: 6500000,
@@ -242,7 +242,7 @@ describe('f-token-controller.js tests', () => {
     }
   });
 
-  test.skip(`Should unblacklist Bob so he can transfer an ERC-20 commitment to Eve`, async () => {
+  test(`Should unblacklist Bob so he can transfer an ERC-20 commitment to Eve`, async () => {
     await fTokenShieldInstance.unBlacklistAddress(accounts[1], {
       from: accounts[0],
       gas: 6500000,

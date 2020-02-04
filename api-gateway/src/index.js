@@ -24,6 +24,7 @@ import {
   formatError,
   errorHandler,
 } from './middlewares';
+import setupAdmin from './setup-admin-user';
 
 const app = express();
 
@@ -65,8 +66,9 @@ process.on('unhandledRejection', (reason, p) => {
   logger.error('Unhandled Rejection at:', p, 'reason:', reason);
 });
 
-const server = app.listen(80, '0.0.0.0', () =>
-  logger.info('API-Gateway API server running on port 80'),
-);
+const server = app.listen(80, '0.0.0.0', async () => {
+  await setupAdmin();
+  logger.info('API-Gateway API server running on port 80');
+});
 
 server.setTimeout(120 * 60 * 1000);

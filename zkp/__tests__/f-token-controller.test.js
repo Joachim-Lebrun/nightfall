@@ -115,6 +115,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test('Should mint an ERC-20 commitment Z_A_C for Alice for asset C', async () => {
+    expect.assertions(1);
     console.log('Alices account ', (await controller.getBalance(accounts[0])).toNumber());
     const { commitment: zTest, commitmentIndex: zIndex } = await erc20.mint(
       C,
@@ -137,6 +138,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test('Should mint another ERC-20 commitment Z_A_D for Alice for asset D', async () => {
+    expect.assertions(1);
     const { commitment: zTest, commitmentIndex: zIndex } = await erc20.mint(
       D,
       pkA,
@@ -184,6 +186,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test('Should mint another ERC-20 commitment Z_B_G for Bob for asset G', async () => {
+    expect.assertions(1);
     const { commitment: zTest, commitmentIndex: zIndex } = await erc20.mint(
       G,
       pkB,
@@ -204,6 +207,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test(`Should blacklist Bob so he can't transfer an ERC-20 commitment to Eve`, async () => {
+    expect.assertions(1);
     await fTokenShieldInstance.blacklistAddress(accounts[1], {
       from: accounts[0],
       gas: 6500000,
@@ -275,6 +279,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test(`Should burn Alice's remaining ERC-20 commitment`, async () => {
+    expect.assertions(1);
     const bal1 = await controller.getBalance(accounts[3]);
     const bal = await controller.getBalance(accounts[0]);
     console.log('accounts[3]', bal1.toNumber());
@@ -303,6 +308,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test(`Should decrypt Alice's Transfer commitment to Bob`, () => {
+    expect.assertions(3);
     const decrypt = erc20.decryptTransaction(transferTxReceipt, {
       type: 'Transfer',
       guessers: [elgamal.rangeGenerator(1000000), [pkA, pkB, pkE], [pkA, pkB, pkE]],
@@ -313,6 +319,7 @@ describe('f-token-controller.js tests', () => {
   });
 
   test(`Should decrypt Alice's Burn commitment`, () => {
+    expect.assertions(1);
     const decrypt = erc20.decryptTransaction(burnTxReceipt, {
       type: 'Burn',
       guessers: [[pkA, pkB, pkE]],

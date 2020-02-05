@@ -51,7 +51,7 @@ export async function createAccountHandler(req, res, next) {
     const status = await offchain.isNameInUse(name);
     if (status) throw Error('Name already in use');
 
-    const address = (await accounts.createAccount(password)).data;
+    const address = await accounts.createAccount(password);
     const shhIdentity = '';
 
     const data = await db.createUser({

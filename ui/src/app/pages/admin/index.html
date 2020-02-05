@@ -1,0 +1,103 @@
+<app-nav> </app-nav>
+<app-spinner
+  *ngIf="isRequesting"
+  [delay]="300"
+  [message]="'Please wait...'"
+  [isRunning]="isRequesting"
+></app-spinner>
+<div class="container">
+  <div>
+    <nav class="mt-4" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a [routerLink]="['/overview']">Overview</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Admin</li>
+      </ol>
+    </nav>
+    <div class="box">
+      <div class="box-header">
+        <h3>Admin</h3>
+      </div>
+
+    <div class="box-body">
+      <div>
+        <div class="row">
+            <div class="col-xs-6 transaction-info">
+              <div class="row form-group">
+                <div class="col-md-12">
+                  <label for="name mb-1">Transaction hash</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    autoFocus
+                    placeholder="Enter Transaction hash"
+                    [(ngModel)]="amount"
+                    (keypress)="utilService.validateTransactionHash($event)"
+                    required
+                  />
+                </div>
+              </div>
+      
+              <div class="row form-group">
+                <div class="col-md-12">
+                  <label for="transactiontype">Transaction Type</label>
+                  <select
+                    class="form-control"
+                    id="transactiontype"
+                    name="transactiontype"
+                    [(ngModel)]="transactionHash"
+                    required
+                  >
+                    <option [ngValue]="undefined" selected>Select </option>
+                    <option value="TransferFT">Transfer commitment</option>
+                    <option value="BurnFT">Burn commitment</option>              
+                  </select>
+                </div>
+              </div>
+      
+              <div class="row form-group">
+                <div class="col-md-12">
+                  <button
+                    type="submit"
+                    class="btn btn-md btn-primary"
+                    [disabled]="!amount || !transactionHash"
+                    (click)="decryptTransaction()"
+                  >
+                    Decrypt Transaction
+                  </button>
+                </div>
+              </div>
+      
+              <div class="row col-md-12" *ngIf="decryptedData">
+                <pre>{{decryptedData}}</pre>
+              </div>
+            </div>
+            <div class="col-xs-6 user-list">
+              <div class="panel panel-primary">
+                <div class="panel-heading"><h3 class="panel-title">All Registered Users</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="list-group">
+                        <li class="list-group-item" *ngFor="let user of users">
+                          <button 
+                            type="button" 
+                            class="btn btn-danger block-btn"
+                            (click)="userActions()"
+                          >
+                          Block
+                          </button>
+                          <strong>{{ user }}</strong>
+                        </li>
+                        <!-- <li class="list-group-item"><button type="button" class="btn btn-success unblock-btn">Unblock</button><strong>Registered User</strong>
+                        </li> -->
+                    </ul>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div> 
+    </div>
+    </div>
+  </div>
+</div>

@@ -14,7 +14,9 @@ const isDirectory = source => fs.lstatSync(source).isDirectory();
 const getDirectories = source =>
   fs
     .readdirSync(source)
-    .map(name => path.join(source, name))
+    .filter(name => {
+      if(name !== 'common') return true;
+    }).map(name => path.join(source, name))
     .filter(isDirectory);
 
 /**

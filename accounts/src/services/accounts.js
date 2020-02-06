@@ -56,5 +56,5 @@ export async function transferEtherToAccount(to, from, amount) {
 
 export async function getCoinbaseAddress() {
   const web3 = Web3.connection();
-  return await web3.eth.getCoinbase();
+  return web3.eth.getCoinbase();
 }

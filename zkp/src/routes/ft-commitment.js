@@ -318,6 +318,64 @@ async function simpleFTCommitmentBatchTransfer(req, res, next) {
   }
 }
 
+/**
+ * This function will blacklist an account address.
+ * req.body {
+ *    malfeasantAddress: "0x137246e44b7b9e2f1e3ca8530e16d515bb1db586"
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+async function setAddressToBlacklist(req, res, next) {
+  const { address } = req.headers;
+  const { malfeasantAddress } = req.body;
+  try {
+    const {
+      contractJson: fTokenShieldJson,
+      contractInstance: fTokenShield,
+    } = await getTruffleContractInstance('FTokenShield');
+
+    await erc20.blacklist(malfeasantAddress, {
+      account: address,
+      fTokenShieldJson,
+      fTokenShieldAddress: fTokenShield.address,
+    });
+    res.data = { message: 'added to blacklist' };
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * This function will remove an account address from blacklist.
+ * req.body {
+ *    blacklistedAddress: "0x137246e44b7b9e2f1e3ca8530e16d515bb1db586"
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+async function unsetAddressFromBlacklist(req, res, next) {
+  const { address } = req.headers;
+  const { blacklistedAddress } = req.body;
+  try {
+    const {
+      contractJson: fTokenShieldJson,
+      contractInstance: fTokenShield,
+    } = await getTruffleContractInstance('FTokenShield');
+
+    await erc20.unblacklist(blacklistedAddress, {
+      account: address,
+      fTokenShieldJson,
+      fTokenShieldAddress: fTokenShield.address,
+    });
+    res.data = { message: 'removed from blacklist' };
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 router.post('/mintFTCommitment', mint);
 router.post('/transferFTCommitment', transfer);
 router.post('/burnFTCommitment', burn);
@@ -326,5 +384,7 @@ router.post('/setFTokenShieldContractAddress', setFTCommitmentShieldAddress);
 router.get('/getFTokenShieldContractAddress', getFTCommitmentShieldAddress);
 router.delete('/removeFTCommitmentshield', unsetFTCommitmentShieldAddress);
 router.post('/simpleFTCommitmentBatchTransfer', simpleFTCommitmentBatchTransfer);
+router.post('/setAddressToBlacklist', setAddressToBlacklist);
+router.post('/unsetAddressFromBlacklist', unsetAddressFromBlacklist);
 
 export default router;

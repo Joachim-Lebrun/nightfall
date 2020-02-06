@@ -20,8 +20,8 @@ export default async function() {
     await offchain.setZkpPublicKey(address, {
       publicKey: data.publicKey,
     });
-    logger.info("Admin user created");
-  } catch(err) {
+    logger.info('Admin user created');
+  } catch (err) {
     console.log(err);
   }
-};
+}

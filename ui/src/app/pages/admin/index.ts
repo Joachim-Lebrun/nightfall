@@ -43,7 +43,26 @@ export default class AdminComponent implements OnInit {
   }
 
   ngOnInit () {
-    this.getAllRegisteredNames();
+    this.verifyAdminAccount();
+  }
+
+  /**
+   * Method to verfiy admin user
+   */
+  verifyAdminAccount() {
+    this.isRequesting = true;
+      this.userService.getUserDetails().subscribe(
+        data => {
+          if(data['data'].name === 'admin'){
+            this.getAllRegisteredNames();
+          }else{
+            this.router.navigate(['/overview']);
+          }
+          this.isRequesting = false;
+      }, error => {
+        this.isRequesting = false;
+
+      });
   }
 
   /**

@@ -54,7 +54,7 @@ export default class AdminComponent implements OnInit {
       this.userService.getUserDetails().subscribe(
         data => {
           if(data['data'].name === 'admin'){
-            this.getAllRegisteredNames();
+            this.getBlacklistedUsers();
           }else{
             this.router.navigate(['/overview']);
           }
@@ -69,9 +69,9 @@ export default class AdminComponent implements OnInit {
    * Method to retrive all users.
    *
    */
-  getAllRegisteredNames() {
+  getBlacklistedUsers() {
     this.isRequesting = true;
-    this.userService.getAllRegisteredNames().subscribe(
+    this.userService.getBlacklistedUsers().subscribe(
       data => {
         this.isRequesting = false;
         this.users = data['data'];
@@ -82,11 +82,43 @@ export default class AdminComponent implements OnInit {
   }
 
   /**
-   * Method to block or unblock user
+   * Method to block account.
    */
-  userActions() {
+  setAddressToBlacklist(name) {
     this.isRequesting = true;
+    this.userService.setAddressToBlacklist(name).subscribe(data => {
+      this.isRequesting = false;
+      this.toastr.success('Successfully Blocked account of ', name);
+    }, error => {
+        this.isRequesting = false;
+        this.toastr.error('Please try again', 'Error');
+    });
+  }
 
+    /**
+   * Method to unblock account.
+   */
+  unsetAddressFromBlacklist(name) {
+    this.isRequesting = true;
+    this.userService.unsetAddressFromBlacklist(name).subscribe(data => {
+      this.isRequesting = false;
+      this.toastr.success('Successfully Unblocked account of ', name);
+    }, error => {
+        this.isRequesting = false;
+        this.toastr.error('Please try again', 'Error');
+    });
+  }
+
+  /**
+   * Method to block account
+   */
+  userActions(action, name) {
+    this.isRequesting = true;
+    if(action === false){
+      this.setAddressToBlacklist(name);
+    }else{
+      this.unsetAddressFromBlacklist(name);
+    } 
     this.isRequesting = false;
   }
 

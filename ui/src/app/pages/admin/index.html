@@ -33,7 +33,6 @@
                     autoFocus
                     placeholder="Enter Transaction hash"
                     [(ngModel)]="amount"
-                    (keypress)="utilService.validateTransactionHash($event)"
                     required
                   />
                 </div>
@@ -82,15 +81,16 @@
                         <li class="list-group-item" *ngFor="let user of users">
                           <button 
                             type="button" 
-                            class="btn btn-danger block-btn"
-                            (click)="userActions()"
+                            class="btn"
+                            [ngClass]="{'btn-danger block-btn' : !user.isBlacklisted, 
+                                        'btn-success unblock-btn' : user.isBlacklisted
+                                       }"
+                            (click)="userActions(user.isBlacklisted, user.name)"
                           >
-                          Block
+                          {{ user.isBlacklisted === true ? 'UNBLOCK' : 'BLOCK' }}
                           </button>
-                          <strong>{{ user }}</strong>
+                          <strong>{{ user.name }}</strong>
                         </li>
-                        <!-- <li class="list-group-item"><button type="button" class="btn btn-success unblock-btn">Unblock</button><strong>Registered User</strong>
-                        </li> -->
                     </ul>
                 </div>
               </div>

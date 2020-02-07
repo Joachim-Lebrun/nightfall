@@ -227,7 +227,7 @@ async function deleteNFTShieldContractInfoByContractAddress(req, res, next) {
 async function getBlacklistedUsers(req, res, next) {
   const blacklistService = new BlacklistService(req.user.db);
   try {
-    res.data = (await blacklistService.getBlacklistedUsers())[0].users;
+    res.data = await blacklistService.getBlacklistedUsers();
     next();
   } catch (err) {
     next(err);

@@ -322,4 +322,28 @@ export default {
     };
     return requestWrapper(options);
   },
+
+  // blacklist an acoount address.
+  setAddressToBlacklist({ address }, body) {
+    const options = {
+      url: `${url}/setAddressToBlacklist`,
+      method: 'POST',
+      json: true,
+      headers: { address },
+      body,
+    };
+    return requestWrapper(options);
+  },
+
+  // remove account address from blacklist.
+  unsetAddressFromBlacklist({ address }, body) {
+    const options = {
+      url: `${url}/unsetAddressFromBlacklist`,
+      method: 'POST',
+      json: true,
+      headers: { address },
+      body,
+    };
+    return requestWrapper(options);
+  },
 };

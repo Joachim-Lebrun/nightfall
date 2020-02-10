@@ -88,7 +88,12 @@ export default class AdminComponent implements OnInit {
     this.isRequesting = true;
     this.userService.setAddressToBlacklist(name).subscribe(data => {
       this.isRequesting = false;
-      this.toastr.success('Successfully Blocked account of ', name);
+      this.users.forEach(value => {
+        if(name === value.name){
+          value.isBlacklisted = true;
+        }
+      });
+      this.toastr.success('Successfully blacklisted ', name);
     }, error => {
         this.isRequesting = false;
         this.toastr.error('Please try again', 'Error');
@@ -102,7 +107,12 @@ export default class AdminComponent implements OnInit {
     this.isRequesting = true;
     this.userService.unsetAddressFromBlacklist(name).subscribe(data => {
       this.isRequesting = false;
-      this.toastr.success('Successfully Unblocked account of ', name);
+      this.users.forEach(value => {
+        if(name === value.name){
+          value.isBlacklisted = false;
+        }
+      });
+      this.toastr.success('Successfully unblacklisted ', name);
     }, error => {
         this.isRequesting = false;
         this.toastr.error('Please try again', 'Error');
@@ -125,9 +135,15 @@ export default class AdminComponent implements OnInit {
   /**
    * Method to decrypt the transaction details
    */
-  decryptTransaction() {
+  decryptTransaction(txHash, type) {
     this.isRequesting = true;
-    this.decryptedData = JSON.stringify({name:'vishnu'});
-    this.isRequesting = false;
+    this.userService.getAndDecodeTransaction(txHash, type).subscribe(
+      data => {
+        this.isRequesting = false;
+        this.decryptedData = JSON.stringify(data);
+    }, error => {
+        this.isRequesting = false;
+        this.toastr.error('Invalid transaction hash or transaction type', 'Error');
+    });
   }
 }

@@ -376,6 +376,28 @@ async function unsetAddressFromBlacklist(req, res, next) {
   }
 }
 
+/**
+ * This function return transaction object from transaction hash.
+ * req.body {
+ *    txHash: "0xb7b47b1ac480694ccf196b31ebffb114e9cb4630fa9f132baf037fc475c3bc1d",
+ *  ` type: Transfer`
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+async function getAndDecodeTransaction(req, res, next) {
+  // const { address } = req.headers;
+  const { txHash, type } = req.query;
+  try {
+    const txReceipt = await fTokenController.getTxRecipt(txHash);
+    // res.data = await erc20.decryptTransaction(txReceipt, { type });
+    res.data = txReceipt;
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 router.post('/mintFTCommitment', mint);
 router.post('/transferFTCommitment', transfer);
 router.post('/burnFTCommitment', burn);
@@ -386,5 +408,6 @@ router.delete('/removeFTCommitmentshield', unsetFTCommitmentShieldAddress);
 router.post('/simpleFTCommitmentBatchTransfer', simpleFTCommitmentBatchTransfer);
 router.post('/setAddressToBlacklist', setAddressToBlacklist);
 router.post('/unsetAddressFromBlacklist', unsetAddressFromBlacklist);
+router.get('/getAndDecodeTransaction', getAndDecodeTransaction);
 
 export default router;

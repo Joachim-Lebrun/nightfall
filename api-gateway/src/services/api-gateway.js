@@ -389,3 +389,12 @@ export async function getBlacklistedUsers(req, res, next) {
     next(err);
   }
 }
+
+export async function getAndDecodeTransaction(req, res, next) {
+  try {
+    res.data = await zkp.getAndDecodeTransaction(req.user, req.query);
+    next();
+  } catch (err) {
+    next(err);
+  }
+}

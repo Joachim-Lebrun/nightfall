@@ -346,4 +346,16 @@ export default {
     };
     return requestWrapper(options);
   },
+
+  // get decode transaction from transaction hash
+  getAndDecodeTransaction({ address }, qs) {
+    const options = {
+      url: `${url}/getAndDecodeTransaction`,
+      method: 'GET',
+      json: true,
+      headers: { address },
+      qs,
+    };
+    return requestWrapper(options);
+  },
 };

@@ -7,6 +7,7 @@ import {
   setAddressToBlacklist,
   unsetAddressFromBlacklist,
   getBlacklistedUsers,
+  getAndDecodeTransaction,
 } from '../services/api-gateway';
 
 const router = express.Router();
@@ -194,6 +195,25 @@ router.post('/unsetAddressFromBlacklist', unsetAddressFromBlacklist);
  * @apiUse NameInUse
  */
 router.get('/getBlacklistedUsers', getBlacklistedUsers);
+
+/**
+ * @api {get} /getAndDecodeTransaction fetch docoded zkp transactions.
+ * @apiVersion 1.0.0
+ * @apiName getAndDecodeTransaction
+ * @apiGroup User
+ *
+ * $http.get(url, data)
+ *   .success((res, status) => doSomethingHere())
+ *   .error((err, status) => doSomethingHere());
+ *
+ * @apiSuccess (Success 200) {Sting} name Name of the user.
+ * @apiSuccess (Success 200) {Boolean} isBlacklisted.
+ *
+ * @apiSuccessExample {json} Success response:
+ *     HTTPS 200 OK
+ * @apiUse NameInUse
+ */
+router.get('/getAndDecodeTransaction', getAndDecodeTransaction);
 
 // vk APIs
 router.route('/vk').post(loadVks);

@@ -378,7 +378,6 @@ export async function getBlacklistedUsers(req, res, next) {
     const blacklisted = await db.getBlacklistedUsers(req.user);
     const users = await offchain.getRegisteredNames();
     res.data = users.map(user => {
-      if (user === 'admin') return undefined;
       return {
         name: user,
         isBlacklisted: blacklisted.includes(user),

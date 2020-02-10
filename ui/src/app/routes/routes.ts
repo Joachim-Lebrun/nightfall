@@ -6,6 +6,7 @@ import OverviewComponent from '../pages/overview';
 import { AuthService } from '../services/auth/auth.service';
 import UserSettingsComponent from '../pages/user-settings';
 import UserProfileComponent from '../pages/user-profile';
+import AdminComponent from '../pages/admin';
 import { UserAccountsComponent } from '../pages/user-accounts/user-accounts.component';
 
 import NftMintComponent from '../pages/nft-mint';
@@ -40,6 +41,7 @@ export const appRoutes: Routes = [
     ],
     canActivate: [AuthService]
   },
+  { path: 'admin', component: AdminComponent, canActivate: [AuthService] },
   { path: 'overview', component: OverviewComponent, canActivate: [AuthService] },
 
   { path: 'nft-commitment/mint', component: NftCommitmentMintComponent , canActivate: [AuthService]},
@@ -51,7 +53,7 @@ export const appRoutes: Routes = [
   { path: 'nft/transfer', component: NftTransferComponent , canActivate: [AuthService]},
   { path: 'nft/burn', component: NftBurnComponent , canActivate: [AuthService]},
   { path: 'nft/list', component: NftListComponent , canActivate: [AuthService]},
-
+  
   { path: 'ft-commitment/mint' , component: FtCommitmentMintComponent, canActivate: [AuthService] },
   { path: 'ft-commitment/transfer', component: FtCommitmentTrasnferComponent, canActivate: [AuthService] },
   { path: 'ft-commitment/batch-transfer', component: FtCommitmentBatchTrasnferComponent, canActivate: [AuthService] },

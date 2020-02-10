@@ -1,4 +1,4 @@
-import { UserService } from '../business';
+import { UserService, BlacklistService } from '../business';
 import { setDB } from '../middlewares';
 
 /**
@@ -219,6 +219,60 @@ async function deleteNFTShieldContractInfoByContractAddress(req, res, next) {
   }
 }
 
+/**
+ * this function is used to get blacklist users
+ * @param {*} req
+ * @param {*} res
+ */
+async function getBlacklistedUsers(req, res, next) {
+  const blacklistService = new BlacklistService(req.user.db);
+  try {
+    res.data = await blacklistService.getBlacklistedUsers();
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * this function is used to add a user to the blacklist
+ * req.body = {
+ *  name,
+ *  address,
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+async function setUserToBlacklist(req, res, next) {
+  const blacklistService = new BlacklistService(req.user.db);
+  try {
+    await blacklistService.setUserToBlacklist(req.body);
+    res.data = { message: 'added to blacklist' };
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * this function is used to remove a user from the blacklist
+ * req.body = {
+ *  name,
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+async function unsetUserFromBlacklist(req, res, next) {
+  const blacklistService = new BlacklistService(req.user.db);
+  try {
+    await blacklistService.unsetUserFromBlacklist(req.body);
+    res.data = { message: 'removed from blacklist' };
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 export default function(router) {
   router.post('/db-connection', configureDBconnection, setDB, getUser);
 
@@ -244,4 +298,11 @@ export default function(router) {
     .route('/users/:name/nft-shield-contracts/:address')
     .put(updateNFTShieldContractInfoByContractAddress)
     .delete(deleteNFTShieldContractInfoByContractAddress);
+
+  // blacklist
+  router
+    .route('/blacklist/users')
+    .get(getBlacklistedUsers)
+    .patch(setUserToBlacklist)
+    .delete(unsetUserFromBlacklist);
 }

@@ -39,7 +39,7 @@ export default class UserService {
 
     return this.http
       .get(url, httpOptions)
-      .pipe(tap(data => console.log(data)),
+      .pipe(tap(data => console.log()),
       catchError(err => {
         console.log('User Not Found', err);
         return err;
@@ -270,6 +270,59 @@ export default class UserService {
     );
   }
 
+  /**
+   * Method to blacklist an account 
+   *
+   * @param name
+   */
+  setAddressToBlacklist(name) {
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    };
+    const url = this.root + 'setAddressToBlacklist';
+    const body = {
+      name,
+    };
+    return this.http.post(url, body, httpOptions).pipe(tap(data => console.log('Account blacklisted')));
+  }
+ 
+  /**
+   * Method to blacklist an account 
+   *
+   * @param name
+   */
+  unsetAddressFromBlacklist(name) {
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    };
+    const url = this.root + 'unsetAddressFromBlacklist';
+    const body = {
+      name,
+    };
+    return this.http.post(url, body, httpOptions).pipe(tap(data => console.log('Account removed form blacklist')));
+  } 
+
+  /**
+   * Method to fetch blacklisted accounts
+   */
+  getBlacklistedUsers() {
+    const url = config.apiGateway.root + 'getBlacklistedUsers';
+    return this.http.get(url).pipe(
+      tap(data => console.log())
+    );
+  }
+
+  /**
+   * Method to decrypt and view the transaction details
+   */
+  getAndDecodeTransaction(txHash, type) {
+    const url = config.apiGateway.root + 'getAndDecodeTransaction?txHash=' + txHash + '&type=' + type;
+    debugger;
+    /* const url = config.apiGateway.root + 'getAndDecodeTransaction?txHash=0x7c115c8568ee79d5fc103537d5b8110e78756d1757026047a90e5cdd745dd20a&type=transfer'; */
+    return this.http.get(url).pipe(
+      tap(data => console.log())
+    );
+  }
 
   /**
    * Error handler for http request.

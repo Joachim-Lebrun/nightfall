@@ -108,7 +108,12 @@ async function getAllRegisteredAddresses(req, res, next) {
 
 async function getAllRegisteredNames(req, res, next) {
   try {
-    res.data = await getNames();
+    const names = await getNames();
+    const adminIndex = names.indexOf('admin');
+    if (adminIndex > -1) {
+      names.splice(adminIndex, 1);
+    }
+    res.data = names;
     next();
   } catch (err) {
     next(err);

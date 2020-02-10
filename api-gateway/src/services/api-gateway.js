@@ -321,3 +321,79 @@ export async function getUserDetails(req, res, next) {
     next(err);
   }
 }
+
+/**
+ * This function will blacklist an account address.
+ * req.body {
+ *    name: "a"
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+export async function setAddressToBlacklist(req, res, next) {
+  const { name } = req.body;
+  try {
+    const malfeasantAddress = await offchain.getAddressFromName(name);
+    res.data = await zkp.setAddressToBlacklist(req.user, { malfeasantAddress });
+    await db.setUserToBlacklist(req.user, {
+      name,
+      address: malfeasantAddress,
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * This function will remove an account address from blacklist.
+ * req.body {
+ *    name: "a"
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+export async function unsetAddressFromBlacklist(req, res, next) {
+  const { name } = req.body;
+  try {
+    const blacklistedAddress = await offchain.getAddressFromName(name);
+    res.data = await zkp.unsetAddressFromBlacklist(req.user, { blacklistedAddress });
+    await db.unsetUserFromBlacklist(req.user, {
+      name,
+      address: blacklistedAddress,
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * This function will fetch blacklisted users
+ * @param {*} req
+ * @param {*} res
+ */
+export async function getBlacklistedUsers(req, res, next) {
+  try {
+    const blacklisted = await db.getBlacklistedUsers(req.user);
+    const users = await offchain.getRegisteredNames();
+    res.data = users.map(user => {
+      return {
+        name: user,
+        isBlacklisted: blacklisted.includes(user),
+      };
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getAndDecodeTransaction(req, res, next) {
+  try {
+    res.data = await zkp.getAndDecodeTransaction(req.user, req.query);
+    next();
+  } catch (err) {
+    next(err);
+  }
+}

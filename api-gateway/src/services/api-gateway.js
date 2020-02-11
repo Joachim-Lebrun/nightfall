@@ -391,7 +391,12 @@ export async function getBlacklistedUsers(req, res, next) {
 
 export async function getAndDecodeTransaction(req, res, next) {
   try {
-    res.data = await zkp.getAndDecodeTransaction(req.user, req.query);
+    const users = await offchain.getRegisteredNames();
+    const publicKeys = await Promise.all(users.map(name => offchain.getZkpPublicKeyFromName(name)));
+    res.data = await zkp.getAndDecodeTransaction(req.user, {
+      ...req.query,
+      publicKeys,
+    });
     next();
   } catch (err) {
     next(err);

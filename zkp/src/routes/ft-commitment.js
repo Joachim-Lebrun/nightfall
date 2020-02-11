@@ -1,10 +1,13 @@
 import { Router } from 'express';
-import { erc20 } from '@eyblockchain/nightlite';
+import { erc20, elgamal } from '@eyblockchain/nightlite';
+import contract from 'truffle-contract';
+
 import utils from '../zkpUtils';
 import fTokenController from '../f-token-controller';
 import { getTruffleContractInstance } from '../contractUtils';
 
 const router = Router();
+elgamal.setAuthorityPrivateKeys(); // setup test keys
 
 /**
  * This function is to mint a fungible token commitment
@@ -385,13 +388,40 @@ async function unsetAddressFromBlacklist(req, res, next) {
  * @param {*} req
  * @param {*} res
  */
-async function getAndDecodeTransaction(req, res, next) {
-  // const { address } = req.headers;
-  const { txHash, type } = req.query;
+async function decodeTransaction(req, res, next) {
+  const { txHash, type, publicKeys } = req.body;
+  let guessers = [];
+
+  if (type === 'Transfer') {
+    guessers = [elgamal.rangeGenerator(1000000000), publicKeys, publicKeys];
+  } else {
+    // case burn
+    guessers = [publicKeys];
+  }
+
   try {
+    const { contractJson: fTokenShieldJson } = await getTruffleContractInstance('FTokenShield');
+
     const txReceipt = await fTokenController.getTxRecipt(txHash);
-    // res.data = await erc20.decryptTransaction(txReceipt, { type });
-    res.data = txReceipt;
+    const fTokenShieldEvents = contract(fTokenShieldJson).events;
+
+    if (!txReceipt) throw Error('No Transaction receipt found.');
+
+    for (const log of txReceipt.logs) {
+      log.event = '';
+      log.args = [];
+
+      const event = fTokenShieldEvents[log.topics[0]];
+      if (event) {
+        log.event = event.name;
+        log.args = await fTokenController.getTxLogDecoded(event.inputs, log.data);
+      }
+    }
+
+    res.data = await erc20.decryptTransaction(txReceipt, {
+      type,
+      guessers,
+    });
     next();
   } catch (err) {
     next(err);
@@ -408,6 +438,6 @@ router.delete('/removeFTCommitmentshield', unsetFTCommitmentShieldAddress);
 router.post('/simpleFTCommitmentBatchTransfer', simpleFTCommitmentBatchTransfer);
 router.post('/setAddressToBlacklist', setAddressToBlacklist);
 router.post('/unsetAddressFromBlacklist', unsetAddressFromBlacklist);
-router.get('/getAndDecodeTransaction', getAndDecodeTransaction);
+router.post('/decodeTransaction', decodeTransaction);
 
 export default router;

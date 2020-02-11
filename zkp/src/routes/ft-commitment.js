@@ -89,7 +89,7 @@ async function transfer(req, res, next) {
   outputCommitments[1].salt = await utils.rndHex(32);
 
   try {
-    const { txReceipt } = await erc20.transfer(
+    const { txReceipt, outputCommitments: newOutputCommitments } = await erc20.transfer(
       inputCommitments,
       outputCommitments,
       receiver.publicKey,
@@ -105,7 +105,8 @@ async function transfer(req, res, next) {
         pkPath: `${process.cwd()}/code/gm17/ft-transfer/proving.key`,
       },
     );
-    res.data = { outputCommitments, txReceipt };
+
+    res.data = { outputCommitments: newOutputCommitments, txReceipt };
     next();
   } catch (err) {
     next(err);

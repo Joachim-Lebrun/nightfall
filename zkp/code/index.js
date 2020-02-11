@@ -55,7 +55,7 @@ async function main() {
       throw new Error(`Trusted setup failed: ${err}`);
     }
   } else {
-    await generateZokratesFiles(`${process.cwd()}/code/${f}`);
+    await generateZokratesFiles(`${process.cwd()}/code/gm17/`, f);
   }
 }
 

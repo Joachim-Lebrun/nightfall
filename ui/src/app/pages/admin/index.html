@@ -21,80 +21,71 @@
       </div>
 
     <div class="box-body">
-      <div>
-        <div class="row">
-            <div class="col-xs-6 transaction-info">
-              <div class="row form-group">
-                <div class="col-md-12">
-                  <label for="name mb-1">Transaction hash</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    autoFocus
-                    placeholder="Enter Transaction hash"
-                    [(ngModel)]="amount"
-                    required
-                  />
-                </div>
+      <div class="row">
+        <div class="row col-md-6 transaction-info">
+          <div class="form-group col-md-12">
+              <label for="name mb-1">Transaction hash</label>
+              <input
+                type="text"
+                class="form-control"
+                autoFocus
+                placeholder="Enter Transaction hash"
+                [(ngModel)]="transactionHash"
+                required
+              />
+          </div>
+  
+          <div class="form-group col-md-12">
+              <label for="transactiontype">Transaction Type</label>
+              <select
+                class="form-control"
+                name="transactiontype"
+                [(ngModel)]="transactionType"
+                required
+              >
+                <option [ngValue]="undefined" selected>Select </option>
+                <option value="transfer">Transfer commitment</option>
+                <option value="burn">Burn commitment</option>
+              </select>
+          </div>
+  
+          <div class="form-group col-md-12">
+              <button
+                type="submit"
+                class="btn btn-md btn-primary"
+                [disabled]="!transactionType || !transactionHash"
+                (click)="decryptTransaction(transactionHash, transactionType)"
+              >
+                Decrypt Transaction
+              </button>
+          </div>
+  
+          <div class="col-md-12 transaction-log" *ngIf="decryptedData">{{decryptedData}}</div>
+        </div>
+        <div class="col-md-6 user-list">
+          <div>
+            <div class="panel panel-primary">
+              <div class="panel-heading"><h3 class="panel-title">All Registered Users</h3>
               </div>
-      
-              <div class="row form-group">
-                <div class="col-md-12">
-                  <label for="transactiontype">Transaction Type</label>
-                  <select
-                    class="form-control"
-                    id="transactiontype"
-                    name="transactiontype"
-                    [(ngModel)]="transactionHash"
-                    required
-                  >
-                    <option [ngValue]="undefined" selected>Select </option>
-                    <option value="TransferFT">Transfer commitment</option>
-                    <option value="BurnFT">Burn commitment</option>              
-                  </select>
-                </div>
-              </div>
-      
-              <div class="row form-group">
-                <div class="col-md-12">
-                  <button
-                    type="submit"
-                    class="btn btn-md btn-primary"
-                    [disabled]="!amount || !transactionHash"
-                    (click)="decryptTransaction()"
-                  >
-                    Decrypt Transaction
-                  </button>
-                </div>
-              </div>
-      
-              <div class="row col-md-12" *ngIf="decryptedData">
-                <pre>{{decryptedData}}</pre>
-              </div>
-            </div>
-            <div class="col-xs-6 user-list">
-              <div class="panel panel-primary">
-                <div class="panel-heading"><h3 class="panel-title">All Registered Users</h3>
-                </div>
-                <div class="panel-body">
-                    <ul class="list-group">
-                        <li class="list-group-item" *ngFor="let user of users">
-                          <button 
-                            type="button" 
-                            class="btn"
-                            [ngClass]="{'btn-danger block-btn' : !user.isBlacklisted, 
-                                        'btn-success unblock-btn' : user.isBlacklisted
-                                       }"
-                            (click)="userActions(user.isBlacklisted, user.name)"
-                          >
-                          {{ user.isBlacklisted === true ? 'UNBLOCK' : 'BLOCK' }}
-                          </button>
-                          <strong>{{ user.name }}</strong>
-                        </li>
-                    </ul>
-                </div>
+              <div class="panel-body">
+                  <ul class="list-group">
+                      <li class="list-group-item" *ngFor="let user of users;index as i">
+                        <button 
+                          type="button" 
+                          class="btn"
+                          [ngClass]="{'btn-danger block-btn' : !user.isBlacklisted, 
+                                      'btn-success unblock-btn' : user.isBlacklisted
+                                      }"
+                          (click)="userActions(user.isBlacklisted, user.name)"
+                        >
+                        {{ user.isBlacklisted === true ? 'UNBLACKLIST' : 'BLACKLIST' }}
+                        </button>
+                        <strong>{{ user.name }}</strong>
+                      </li>
+                  </ul>
               </div>
             </div>
+          </div>
         </div>
       </div> 
     </div>

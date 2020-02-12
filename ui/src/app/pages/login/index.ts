@@ -61,9 +61,9 @@ export default class LoginComponent implements OnInit {
         localStorage.setItem('publicKey', data['data']['publicKey']);
         this.isRequesting = false;
         this.sg['name'] = data['data']['name'];
-        if(data['data']['name'] === 'admin'){
+        if (data['data']['name'] === 'admin') {
           this.router.navigate(['/admin']);
-        }else{
+        } else {
           this.router.navigate(['/overview']);
         }
 

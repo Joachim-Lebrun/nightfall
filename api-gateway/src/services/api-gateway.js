@@ -390,13 +390,34 @@ export async function getBlacklistedUsers(req, res, next) {
 }
 
 export async function getAndDecodeTransaction(req, res, next) {
+  let value;
+  const sender = {};
+  let receiver = {};
+  const { txHash, type } = req.query;
+
   try {
     const users = await offchain.getRegisteredNames();
     const publicKeys = await Promise.all(users.map(name => offchain.getZkpPublicKeyFromName(name)));
-    res.data = await zkp.getAndDecodeTransaction(req.user, {
-      ...req.query,
+
+    const data = await zkp.getAndDecodeTransaction(req.user, {
+      txHash,
+      type,
       publicKeys,
     });
+
+    if (type === 'Transfer') {
+      [value, sender.publicKey, receiver.publicKey] = data;
+    } else {
+      [sender.publicKey] = data;
+      receiver = undefined;
+    }
+
+    res.data = {
+      [value && 'value']: value,
+      [sender && 'sender']: sender,
+      [receiver && 'receiver']: receiver,
+    };
+
     next();
   } catch (err) {
     next(err);

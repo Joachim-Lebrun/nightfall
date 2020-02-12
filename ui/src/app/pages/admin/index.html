@@ -6,89 +6,91 @@
   [isRunning]="isRequesting"
 ></app-spinner>
 <div class="container">
-  <div>
-    <nav class="mt-4" aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <a [routerLink]="['/overview']">Overview</a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">Admin</li>
-      </ol>
-    </nav>
-    <div class="box">
-      <div class="box-header">
-        <h3>Admin</h3>
-      </div>
-
-    <div class="box-body">
-      <div class="row">
-        <div class="row col-md-6 transaction-info">
-          <div class="form-group col-md-12">
-              <label for="name mb-1">Transaction hash</label>
-              <input
-                type="text"
-                class="form-control"
-                autoFocus
-                placeholder="Enter Transaction hash"
-                [(ngModel)]="transactionHash"
-                required
-              />
-          </div>
-  
-          <div class="form-group col-md-12">
-              <label for="transactiontype">Transaction Type</label>
-              <select
-                class="form-control"
-                name="transactiontype"
-                [(ngModel)]="transactionType"
-                required
-              >
-                <option [ngValue]="undefined" selected>Select </option>
-                <option value="transfer">Transfer commitment</option>
-                <option value="burn">Burn commitment</option>
-              </select>
-          </div>
-  
-          <div class="form-group col-md-12">
-              <button
-                type="submit"
-                class="btn btn-md btn-primary"
-                [disabled]="!transactionType || !transactionHash"
-                (click)="decryptTransaction(transactionHash, transactionType)"
-              >
-                Decrypt Transaction
-              </button>
-          </div>
-  
-          <div class="col-md-12 transaction-log" *ngIf="decryptedData">{{decryptedData}}</div>
+  <div class="row">
+    <div class="col-md-12">
+      <nav class="mt-4" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a [routerLink]="['/overview']">Overview</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Admin</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="col-md-8">
+      <div class="box">
+        <div class="box-header">
+          <h3>Get Transaction Receipt</h3>
         </div>
-        <div class="col-md-6 user-list">
-          <div>
-            <div class="panel panel-primary">
-              <div class="panel-heading"><h3 class="panel-title">All Registered Users</h3>
+        <div class="box-body">
+          <div class="">
+            <div class="transaction-info">
+              <div class="form-group">
+                  <label for="name mb-1">Transaction hash</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    autoFocus
+                    placeholder="Enter Transaction hash"
+                    [(ngModel)]="transactionHash"
+                    required
+                  />
               </div>
-              <div class="panel-body">
-                  <ul class="list-group">
-                      <li class="list-group-item" *ngFor="let user of users;index as i">
-                        <button 
-                          type="button" 
-                          class="btn"
-                          [ngClass]="{'btn-danger block-btn' : !user.isBlacklisted, 
-                                      'btn-success unblock-btn' : user.isBlacklisted
-                                      }"
-                          (click)="userActions(user.isBlacklisted, user.name)"
-                        >
-                        {{ user.isBlacklisted === true ? 'UNBLACKLIST' : 'BLACKLIST' }}
-                        </button>
-                        <strong>{{ user.name }}</strong>
-                      </li>
-                  </ul>
+              <div class="form-group">
+                  <label for="transactiontype">Transaction Type</label>
+                  <select
+                    class="form-control"
+                    name="transactiontype"
+                    [(ngModel)]="transactionType"
+                    required
+                  >
+                    <option [ngValue]="undefined" selected>Select </option>
+                    <option value="Transfer">Transfer</option>
+                    <option value="Burn">Burn</option>
+                  </select>
               </div>
+              <div class="form-group">
+                  <button
+                    type="submit"
+                    class="btn btn-md btn-primary"
+                    [disabled]="!transactionType || !transactionHash"
+                    (click)="decryptTransaction(transactionHash, transactionType)"
+                  >
+                    Decrypt Transaction
+                  </button>
+              </div>
+              <div class="transaction-log" *ngIf="decryptedData" [innerHtml]="decryptedData"></div>
+            </div>
+          </div> 
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="user-list">
+        <div>
+          <div class="panel panel-primary">
+            <div class="panel-heading"><h3 class="panel-title">All Registered Users</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group">
+                    <li class="list-group-item" *ngFor="let user of users;index as i">
+                      <button 
+                        type="button" 
+                        class="btn"
+                        [ngClass]="{'btn-danger block-btn' : !user.isBlacklisted, 
+                                    'btn-success unblock-btn' : user.isBlacklisted
+                                    }"
+                        (click)="userActions(user.isBlacklisted, user.name)"
+                      >
+                      {{ user.isBlacklisted === true ? 'UNBLACKLIST' : 'BLACKLIST' }}
+                      </button>
+                      <strong>{{ user.name }}</strong>
+                    </li>
+                </ul>
             </div>
           </div>
         </div>
-      </div> 
-    </div>
+      </div>
     </div>
   </div>
 </div>

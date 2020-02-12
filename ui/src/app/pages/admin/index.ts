@@ -25,7 +25,7 @@ export default class AdminComponent implements OnInit {
   users: any = [];
 
   /**
-   * To store transaction hash 
+   * To store transaction hash
    */
   transactionHash;
   /**
@@ -53,9 +53,9 @@ export default class AdminComponent implements OnInit {
     this.isRequesting = true;
       this.userService.getUserDetails().subscribe(
         data => {
-          if(data['data'].name === 'admin'){
+          if (data['data'].name === 'admin') {
             this.getBlacklistedUsers();
-          }else{
+          } else {
             this.router.navigate(['/overview']);
           }
           this.isRequesting = false;
@@ -89,7 +89,7 @@ export default class AdminComponent implements OnInit {
     this.userService.setAddressToBlacklist(name).subscribe(data => {
       this.isRequesting = false;
       this.users.forEach(value => {
-        if(name === value.name){
+        if (name === value.name) {
           value.isBlacklisted = true;
         }
       });
@@ -108,7 +108,7 @@ export default class AdminComponent implements OnInit {
     this.userService.unsetAddressFromBlacklist(name).subscribe(data => {
       this.isRequesting = false;
       this.users.forEach(value => {
-        if(name === value.name){
+        if (name === value.name) {
           value.isBlacklisted = false;
         }
       });
@@ -124,11 +124,11 @@ export default class AdminComponent implements OnInit {
    */
   userActions(action, name) {
     this.isRequesting = true;
-    if(action === false){
+    if (action === false) {
       this.setAddressToBlacklist(name);
-    }else{
+    } else {
       this.unsetAddressFromBlacklist(name);
-    } 
+    }
     this.isRequesting = false;
   }
 
@@ -140,7 +140,11 @@ export default class AdminComponent implements OnInit {
     this.userService.getAndDecodeTransaction(txHash, type).subscribe(
       data => {
         this.isRequesting = false;
-        this.decryptedData = JSON.stringify(data);
+        this.decryptedData = JSON.stringify(data.data)
+          .replace(/,/g, ',<br/>')
+          .replace(/}/g, '<br/>}')
+          .replace(/:{/g, ': {<br/>&emsp;&emsp;')
+          .replace(/{"/g, '{<br/>&emsp;"');
     }, error => {
         this.isRequesting = false;
         this.toastr.error('Invalid transaction hash or transaction type', 'Error');

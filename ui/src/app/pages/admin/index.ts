@@ -140,6 +140,18 @@ export default class AdminComponent implements OnInit {
     return html;
   }
 
+  async onSearchChange(value) {
+    this.isRequesting = true;
+    this.userService.getBlacklistedUsers().subscribe(data => {
+      this.isRequesting = false;
+      if (!value) {
+        this.users = data['data'];
+        return;
+      }
+      this.users = data['data'].filter(({ name }) => name.includes(value));
+    });
+  }
+
   /**
    * Method to decrypt the transaction details
    */
@@ -147,7 +159,9 @@ export default class AdminComponent implements OnInit {
     this.isRequesting = true;
     this.userService.getAndDecodeTransaction(txHash, type).subscribe(
       data => {
-        let innerHtml = '<table class="table table-hover"><tbody>';
+        let innerHtml = `<table class="table table-hover table-striped">
+          <tbody>
+          `;
         this.isRequesting = false;
         if (!data['data']) {
           return;

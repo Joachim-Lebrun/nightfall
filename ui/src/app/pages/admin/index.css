@@ -1,75 +1,32 @@
 .transaction-log {
-    display: block;
-    color: #212529;
-    padding: 16px;
-    overflow: auto;
-    font-size: 85%;
-    line-height: 1.45;
-    background-color: #f6f8fa;
-    border-radius: 3px;
-    word-wrap: break-all;
-    word-break: break-all;
-}
-
-.panel {
-    margin-bottom: 20px;
-    background-color: #fff;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
-    box-shadow: 0 1px 1px rgba(0,0,0,.05);
-}
-
-.panel-primary {
-    border-color: #13252b;
-}
-
-.panel-primary>.panel-heading {
-    color: #fff;
-    background-color: #13252b;
-    border-color: #13252b;
-}
-
-.panel-title{
-    padding: 10px;
+  display: block;
+  color: #212529;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 3px;
+  word-wrap: break-all;
+  word-break: break-all;
 }
 
 .list-group{
-    max-height: 300px;
-    margin-bottom: 10px;
-    overflow:scroll;
-    -webkit-overflow-scrolling: touch;
+  max-height: 300px;
+  overflow:scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
-.user-list{
-    min-width: 45%;
+.table {
+  border: 1px solid #ddd;
+  background-color: white;
 }
 
-.transaction-info{
-    min-width: 45%;
-    margin-left: 1em;
+.table-body {
+  max-height: 600px; 
+  overflow: auto;
 }
 
-.block-btn{
-    padding: 6px;
-    border-radius: 4px;
-    margin-right: 1em;
-    width: 110px;
-    font-weight: bold;
-}
-
-.unblock-btn {
-    padding: 6px;
-    border-radius: 4px;
-    margin-right: 1em;
-    width: 110px;
-    font-weight: bold;  
-}
-
-h3.panel-title {
-    margin: 0;
-}
-
-ul.list-group {
-    margin-bottom: 0;
+.float-right {
+  float: right;
 }

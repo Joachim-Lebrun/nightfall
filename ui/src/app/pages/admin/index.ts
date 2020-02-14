@@ -122,14 +122,22 @@ export default class AdminComponent implements OnInit {
   /**
    * Method to block account
    */
-  userActions(action, name) {
-    this.isRequesting = true;
-    if (action === false) {
-      this.setAddressToBlacklist(name);
-    } else {
-      this.unsetAddressFromBlacklist(name);
+  userActions(previousStatus, name) {
+    (previousStatus ? this.unsetAddressFromBlacklist(name) : this.setAddressToBlacklist(name));
+  }
+
+  parseJson(html, object, parentKey = '') {
+    for (const key in object) {
+      if (typeof object[key] === 'object') {
+        html = this.parseJson(html, object[key], key);
+      } else {
+        html += `<tr>
+          <td><strong>${parentKey} ${key}</strong></td>
+          <td>${object[key]}</td>
+        </tr>`;
+      }
     }
-    this.isRequesting = false;
+    return html;
   }
 
   /**
@@ -139,12 +147,14 @@ export default class AdminComponent implements OnInit {
     this.isRequesting = true;
     this.userService.getAndDecodeTransaction(txHash, type).subscribe(
       data => {
+        let innerHtml = '<table class="table table-hover"><tbody>';
         this.isRequesting = false;
-        this.decryptedData = JSON.stringify(data.data)
-          .replace(/,/g, ',<br/>')
-          .replace(/}/g, '<br/>}')
-          .replace(/:{/g, ': {<br/>&emsp;&emsp;')
-          .replace(/{"/g, '{<br/>&emsp;"');
+        if (!data['data']) {
+          return;
+        }
+        innerHtml = this.parseJson(innerHtml, data['data']);
+        innerHtml += '</tbody></table>';
+        this.decryptedData = innerHtml;
     }, error => {
         this.isRequesting = false;
         this.toastr.error('Invalid transaction hash or transaction type', 'Error');

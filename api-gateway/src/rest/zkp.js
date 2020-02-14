@@ -348,13 +348,13 @@ export default {
   },
 
   // get decode transaction from transaction hash
-  getAndDecodeTransaction({ address }, qs) {
+  getAndDecodeTransaction({ address }, body) {
     const options = {
-      url: `${url}/getAndDecodeTransaction`,
-      method: 'GET',
+      url: `${url}/decodeTransaction`,
+      method: 'POST',
       json: true,
       headers: { address },
-      qs,
+      body,
     };
     return requestWrapper(options);
   },

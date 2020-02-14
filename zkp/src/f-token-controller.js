@@ -176,6 +176,16 @@ async function getTxRecipt(txHash) {
   return web3.eth.getTransactionReceipt(txHash);
 }
 
+/**
+Return decoded transaction receipt object.
+@param inputs - event input defination.
+@param data - encoded data
+*/
+async function getTxLogDecoded(inputs, data) {
+  const web3 = Web3.connection();
+  return web3.eth.abi.decodeLog(inputs, data);
+}
+
 export default {
   getBalance,
   getFTAddress,
@@ -189,4 +199,5 @@ export default {
   checkCorrectness,
   getShieldAddress,
   getTxRecipt,
+  getTxLogDecoded,
 };

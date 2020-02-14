@@ -107,8 +107,7 @@ import { AppAutoFocusDirective } from './shared/autofocus.directive';
       closeButton: true,
       tapToDismiss: true
     }),
-    NgSelectModule
-
+    NgSelectModule,
   ],
 
   providers: [

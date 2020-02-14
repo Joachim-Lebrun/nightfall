@@ -271,7 +271,7 @@ export default class UserService {
   }
 
   /**
-   * Method to blacklist an account 
+   * Method to blacklist an account
    *
    * @param name
    */
@@ -285,9 +285,9 @@ export default class UserService {
     };
     return this.http.post(url, body, httpOptions).pipe(tap(data => console.log('Account blacklisted')));
   }
- 
+
   /**
-   * Method to blacklist an account 
+   * Method to unblacklist an account
    *
    * @param name
    */
@@ -300,7 +300,7 @@ export default class UserService {
       name,
     };
     return this.http.post(url, body, httpOptions).pipe(tap(data => console.log('Account removed form blacklist')));
-  } 
+  }
 
   /**
    * Method to fetch blacklisted accounts
@@ -317,8 +317,6 @@ export default class UserService {
    */
   getAndDecodeTransaction(txHash, type) {
     const url = config.apiGateway.root + 'getAndDecodeTransaction?txHash=' + txHash + '&type=' + type;
-    debugger;
-    /* const url = config.apiGateway.root + 'getAndDecodeTransaction?txHash=0x7c115c8568ee79d5fc103537d5b8110e78756d1757026047a90e5cdd745dd20a&type=transfer'; */
     return this.http.get(url).pipe(
       tap(data => console.log())
     );

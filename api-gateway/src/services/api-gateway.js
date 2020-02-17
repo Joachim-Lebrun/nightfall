@@ -407,10 +407,13 @@ export async function getAndDecodeTransaction(req, res, next) {
 
     if (type === 'Transfer') {
       [value, sender.publicKey, receiver.publicKey] = data;
+      receiver.name = await offchain.getNameFromZkpPublicKey(receiver.publicKey);
     } else {
       [sender.publicKey] = data;
       receiver = undefined;
     }
+
+    sender.name = await offchain.getNameFromZkpPublicKey(sender.publicKey);
 
     res.data = {
       [value && 'value']: value,

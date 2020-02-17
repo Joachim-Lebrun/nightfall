@@ -150,4 +150,15 @@ export default {
     };
     return requestWrapper(options);
   },
+
+  // get whisper identity
+  getNameFromZkpPublicKey(zkp) {
+    const options = {
+      url: `${url}/getNameFromZkpPublicKey`,
+      method: 'GET',
+      json: true,
+      qs: { zkp },
+    };
+    return requestWrapper(options);
+  },
 };

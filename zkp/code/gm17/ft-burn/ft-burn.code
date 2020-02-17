@@ -8,6 +8,7 @@ import "hashes/sha256/IVconstants.code" as IVconstants
 import "hashes/sha256/shaRoundNoBoolCheck.code" as sha256
 import "../common/order-fields.zok" as orderFields
 import "../common/mimc-hash-2.zok" as mimc2
+import "../common/edwards-compress.zok" as edwardsCompress
 import "utils/pack/pack256.code" as pack256
 
 
@@ -17,23 +18,22 @@ def concatenate128x256x256(field[128] a, field[256] b, field[256] c)->(field[640
 def concatenate256x256(field[256] a, field[256] b)->(field[512]):
 	return [...a, ...b]
 
-def concatenate11xx256(field[256] a, field[256] b, field[256] c, field[256] d, field[256] e, field[256] f, field[256] g, field[256] h, field[256] i, field[256] j, field[256] k)->(field[2816]):
-	return [...a, ...b, ...c, ...d, ...e, ...f, ...g, ...h, ...i, ...j, ...k]
+def concatenate8xx256(field[256] a, field[256] b, field[256] c, field[256] d, field[256] e, field[256] f, field[256] g, field[256] h)->(field[2048]):
+	return [...a, ...b, ...c, ...d, ...e, ...f, ...g, ...h]
 
 def orderedConcatenate216x216(field order, field[216] pathNode, field[216] siblingNode)->(field[432]):
 	field[216] left = if order == 0 then pathNode else siblingNode fi
 	field[216] right = if order == 0 then siblingNode else pathNode fi
 	return [...left, ...right]
 
-def sha256of3072(field[256] a0, field[256] a1, field[256] a2, field[256] a3, field[256] a4, field[256] a5, field[256] a6, field[256] a7, field[256] a8, field[256] a9, field[256] a10, field[256] a11) -> (field[256]):
+def sha256of2560(field[256] a0, field[256] a1, field[256] a2, field[256] a3, field[256] a4, field[256] a5, field[256] a6, field[256] a7, field[256] a8, field[256] a9) -> (field[256]):
     IV =  IVconstants()
     digest1 =  sha256(a0, a1, IV)
     digest2 =  sha256(a2, a3, digest1)
     digest3 =  sha256(a4, a5, digest2)
     digest4 =  sha256(a6, a7, digest3)
     digest5 =  sha256(a8, a9, digest4)
-    digest6 =  sha256(a10, a11, digest5)
-  	return digest6
+  	return digest5
 
 def shaPad432To512(field[432] a)->(field[512]):
 	return [...a, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,1,0,1,1,0,0,0,0]
@@ -51,8 +51,8 @@ def shaPad640To1024()->(field[384]):
 	return [1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	1,	0,	0,	0,	0,	0,	0,	0]
 
 // Provides the padding (only!) for a 2816-bit message.
-def shaPad2816To3072()->(field[256]):
-	return [1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0]
+def shaPad2048To2560()->(field[512]):
+	return [1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
 
 // unpacks a siblingPath's node to bits, ready for sha-ing:
 def unpackSiblingNode(field siblingNode)->(field[216]):
@@ -108,7 +108,7 @@ def main(field publicInputHash, private field[2] payTo, private field value, pri
 	field[256] padding256To512 = shaPad256To512()
 	field[512] padding512To1024 = shaPad512To1024()
 	field[384] padding640To1024 = shaPad640To1024()
-	field[256] padding2816To3072 = shaPad2816To3072()
+	field[512] padding2048To2560 = shaPad2048To2560()
 
 
  	// First we construct a proof that the nullifier is correct
@@ -172,11 +172,16 @@ def main(field publicInputHash, private field[2] payTo, private field value, pri
 	// (This also intertwines the 'payTo' input into the proof)
 	// we have to expand the valueBits for this, because that's how Node and Solidity calculate it (due, ultimately, to the stack size limitations of Solidity)
 	field[256] longValueBits = [...[0;128], ...valueBits]
-	field[2816] preimage2816 = concatenate11xx256(rootBits, nullifierBits, longValueBits, payToBits, unpack256(publicKeyRoot), unpack256(encryption[0]), unpack256(encryption[1]), unpack256(encryption[2]), unpack256(encryption[3]), unpack256(authorityPublicKey1[0]), unpack256(authorityPublicKey1[1]))
+	// To make the hash smaller, let's 'compress' each curve point ordered pair into a single 256 bit array (rather than two)...
+	field[256] compressedEncryptionBits1 = edwardsCompress(encryption[0], encryption[1])
+	field[256] compressedEncryptionBits2 = edwardsCompress(encryption[2], encryption[3])
+	field[256] compressedAuthorityPublicKeyBits1 = edwardsCompress(authorityPublicKey1[0], authorityPublicKey1[1])
 
-	field[3072] preimage3072 = [...preimage2816, ...padding2816To3072]
+	field[2048] preimage2048 = concatenate8xx256(rootBits, nullifierBits, longValueBits, payToBits, unpack256(publicKeyRoot), compressedEncryptionBits1, compressedEncryptionBits2, compressedAuthorityPublicKeyBits1)
 
-	field[256] publicInputHashBitsCheck = sha256of3072(preimage3072[0..256], preimage3072[256..512], preimage3072[512..768], preimage3072[768..1024], preimage3072[1024..1280], preimage3072[1280..1536], preimage3072[1536..1792], preimage3072[1792..2048], preimage3072[2048..2304], preimage3072[2304..2560], preimage3072[2560..2816], preimage3072[2816..3072])
+	field[2560] preimage2560 = [...preimage2048, ...padding2048To2560]
+
+	field[256] publicInputHashBitsCheck = sha256of2560(preimage2560[0..256], preimage2560[256..512], preimage2560[512..768], preimage2560[768..1024], preimage2560[1024..1280], preimage2560[1280..1536], preimage2560[1536..1792], preimage2560[1792..2048], preimage2560[2048..2304], preimage2560[2304..2560])
 
 	publicInputHashBits[8..256] == publicInputHashBitsCheck[8..256]
 

@@ -16,7 +16,14 @@ const logger = require('./logger');
 const Element = require('./Element');
 const Web3 = require('./provider');
 const erc20Interface = require('./contracts/ERC20Interface.json');
-const { enc, AUTHORITY_PUBLIC_KEYS, dec, bruteForce } = require('./elgamal');
+const {
+  enc,
+  AUTHORITY_PUBLIC_KEYS,
+  dec,
+  bruteForce,
+  edwardsCompress,
+  edwardsDecompress,
+} = require('./elgamal');
 const { getPublicKeyTreeData } = require('./public-key-tree');
 
 /**
@@ -80,9 +87,10 @@ function decryptTransaction(txReceipt, { type, guessers }) {
   for (
     let i = config.ALLOWED_DECRYPTION_TYPES[type].PUBLIC_INPUTS_START_POSITION;
     i < config.ALLOWED_DECRYPTION_TYPES[type].PUBLIC_INPUTS_END_POSITION;
-    i += 2
+    i++
   ) {
-    c.push([BigInt(publicInputs[i]), BigInt(publicInputs[i + 1])]);
+    logger.debug('recovered public input', i, publicInputs[i]);
+    c.push(edwardsDecompress(publicInputs[i]));
   }
   const m = dec(c);
   const decrypt = [];
@@ -466,20 +474,20 @@ async function transfer(
   logger.debug(`public key tree leaf index:`, publicKeyTreeData.leafIndex);
   logger.debug(`sender public key`, senderPublicKey);
 
-  const publicInputsArray = [
+  const compressedPublicInputsArray = [
     root,
     inputCommitments[0].nullifier,
     inputCommitments[1].nullifier,
     outputCommitments[0].commitment,
     outputCommitments[1].commitment,
     publicKeyTreeData.siblingPath[0],
-    ...encryption.flat().map(e => `0x${e.toString(16).padStart(64, '0')}`), // convert to hex string for sha hash
-    ...AUTHORITY_PUBLIC_KEYS.flat().map(e => `0x${e.toString(16).padStart(64, '0')}`),
+    ...encryption.map(pt => edwardsCompress(pt)),
+    ...AUTHORITY_PUBLIC_KEYS.map(pt => edwardsCompress(pt)),
   ];
 
-  logger.debug('array of public inputs', publicInputsArray);
+  logger.debug('array of compressed public inputs', compressedPublicInputsArray);
 
-  const publicInputHash = utils.concatenateThenHash(...publicInputsArray);
+  const publicInputHash = utils.concatenateThenHash(...compressedPublicInputsArray);
   logger.debug(
     'publicInputHash:',
     publicInputHash,
@@ -552,7 +560,7 @@ async function transfer(
   const txReceipt = await fTokenShieldInstance.transfer(
     proof,
     utils.formatInputsForZkSnark([new Element(publicInputHash, 'field', 248, 1)]),
-    publicInputsArray,
+    compressedPublicInputsArray,
     {
       from: account,
       gas: 6500000,
@@ -861,18 +869,16 @@ async function burn(
   const amountLeftPadded = utils.ensure0x(utils.strip0x(amount).padStart(64, '0'));
 
   // we need to compress the number of public inputs passed to solidity because of its limited stack space.
-  const publicInputsArray = [
+  const compressedPublicInputsArray = [
     root,
     nullifier,
     amountLeftPadded,
     payToLeftPadded,
     publicKeyTreeData.siblingPath[0],
-    ...encryption.flat().map(e => `0x${e.toString(16).padStart(64, '0')}`), // convert to hex string for sha hash
-    ...AUTHORITY_PUBLIC_KEYS.slice(0, 1)
-      .flat()
-      .map(e => `0x${e.toString(16).padStart(64, '0')}`),
+    ...encryption.map(pt => edwardsCompress(pt)),
+    ...AUTHORITY_PUBLIC_KEYS.slice(0, 1).map(pt => edwardsCompress(pt)),
   ];
-  const publicInputHash = utils.concatenateThenHash(...publicInputsArray); // notice we're using the version of payTo which has been padded to 256-bits; to match our derivation of publicInputHash within our zokrates proof.
+  const publicInputHash = utils.concatenateThenHash(...compressedPublicInputsArray); // notice we're using the version of payTo which has been padded to 256-bits; to match our derivation of publicInputHash within our zokrates proof.
   logger.debug(
     'publicInputHash:',
     publicInputHash,
@@ -937,11 +943,16 @@ async function burn(
   logger.debug(publicInputs);
 
   // Burn the commitment and return tokens to the payTo account.
-  const txReceipt = await fTokenShieldInstance.burn(proof, publicInputs, publicInputsArray, {
-    from: account,
-    gas: 6500000,
-    gasPrice: config.GASPRICE,
-  });
+  const txReceipt = await fTokenShieldInstance.burn(
+    proof,
+    publicInputs,
+    compressedPublicInputsArray,
+    {
+      from: account,
+      gas: 6500000,
+      gasPrice: config.GASPRICE,
+    },
+  );
   utils.gasUsedStats(txReceipt, 'burn');
 
   const newRoot = await fTokenShieldInstance.latestRoot();

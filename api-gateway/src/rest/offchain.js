@@ -151,7 +151,7 @@ export default {
     return requestWrapper(options);
   },
 
-  // get whisper identity
+  // get user name from it public key.
   getNameFromZkpPublicKey(zkp) {
     const options = {
       url: `${url}/getNameFromZkpPublicKey`,
